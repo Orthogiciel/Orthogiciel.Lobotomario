@@ -1,2 +1,2 @@
 # Orthogiciel.Lobotomario
-AI playing Super Mario Bros
+Artificial intelligence playing Super Mario Bros
