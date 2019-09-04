@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Orthogiciel.Lobotomario.Bot\Orthogiciel.Lobotomario.Bot.csproj">
-      <Project>{855efcde-b080-46cf-8a81-524f999a2b47}</Project>
-      <Name>Orthogiciel.Lobotomario.Bot</Name>
+    <ProjectReference Include="..\Orthogiciel.Lobotomario.Core\Orthogiciel.Lobotomario.Core.csproj">
+      <Project>{a373f117-2971-448b-9507-be65bb906ff1}</Project>
+      <Name>Orthogiciel.Lobotomario.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

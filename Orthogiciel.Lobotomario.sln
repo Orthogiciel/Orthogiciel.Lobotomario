@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orthogiciel.Lobotomario.Cli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orthogiciel.Lobotomario.Client.Wpf", "Orthogiciel.Lobotomario.Client.Wpf\Orthogiciel.Lobotomario.Client.Wpf.csproj", "{605F821D-2473-4781-BB99-BF3A166F3B61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orthogiciel.Lobotomario.Bot", "Orthogiciel.Lobotomario.Bot\Orthogiciel.Lobotomario.Bot.csproj", "{855EFCDE-B080-46CF-8A81-524F999A2B47}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orthogiciel.Lobotomario.Core", "Orthogiciel.Lobotomario.Core\Orthogiciel.Lobotomario.Core.csproj", "{A373F117-2971-448B-9507-BE65BB906FF1}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{605F821D-2473-4781-BB99-BF3A166F3B61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{605F821D-2473-4781-BB99-BF3A166F3B61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{605F821D-2473-4781-BB99-BF3A166F3B61}.Release|Any CPU.Build.0 = Release|Any CPU
-		{855EFCDE-B080-46CF-8A81-524F999A2B47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{855EFCDE-B080-46CF-8A81-524F999A2B47}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{855EFCDE-B080-46CF-8A81-524F999A2B47}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{855EFCDE-B080-46CF-8A81-524F999A2B47}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A373F117-2971-448B-9507-BE65BB906FF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A373F117-2971-448B-9507-BE65BB906FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A373F117-2971-448B-9507-BE65BB906FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
