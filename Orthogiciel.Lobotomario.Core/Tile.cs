@@ -11,7 +11,7 @@ namespace Orthogiciel.Lobotomario.Core
         // Name
 
         // Types : 
-        // Tuyo (peut rentrer dedans)
+        // TA CAUSE DU TUYO
 
         // IsBreakable
     }
