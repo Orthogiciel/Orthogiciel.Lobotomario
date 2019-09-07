@@ -1,0 +1,2 @@
+hauteur : 208 pixels
+largeur : 256 pixels
