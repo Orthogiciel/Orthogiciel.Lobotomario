@@ -13,41 +13,16 @@ namespace Orthogiciel.Lobotomario.Core
 {
     public static class ImageProcessor
     {
-        public static bool FindSprite(Bitmap sprite, Bitmap image)
-        {
-            for (var x = 0; x < image.Width; x++)
-            {
-                for (var y = 0; y < image.Height; y++)
-                {
-                    var found = true;
-
-                    for (var x_sprite = 0; x_sprite < sprite.Width; x_sprite++)
-                    {
-                        for (var y_sprite = 0; y_sprite < sprite.Height; y_sprite++)
-                        {
-                            if (!PixelsMatch(sprite.GetPixel(x_sprite, y_sprite), image.GetPixel(x + x_sprite, y + y_sprite)))
-                            {
-                                found = false;
-                                break;
-                            }
-                        }
-
-                        if (!found)
-                            break;
-                    }
-
-                    if (found)
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
         public static void MarkSprites(Bitmap sprite, Bitmap image)
         {
+            // TODO : gérer ça en plusieurs étapes
+            //        1. Trouver une tuile
+            //        2. Ensuite, rechercher les tuiles en faisant des sauts à partir de celle là
+
             for (var x = 0; x < image.Width - 1; x++)
             {
+                var matchFoundInColumn = false;
+
                 for (var y = 0; y < image.Height - 1; y++)
                 {
                     var found = true;
@@ -76,8 +51,13 @@ namespace Orthogiciel.Lobotomario.Core
                         }
 
                         y += sprite.Height - 1;
+
+                        matchFoundInColumn = true;
                     }
                 }
+
+                if (matchFoundInColumn)
+                    x += sprite.Width - 1;
             }
         }
 
