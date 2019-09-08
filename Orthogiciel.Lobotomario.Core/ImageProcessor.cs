@@ -15,25 +15,29 @@ namespace Orthogiciel.Lobotomario.Core
     {
         public static void MarkSprites(Tile tile, Bitmap image)
         {
+            var tileSet = Tile.Tileset;
+            var currentDateDate = DateTime.Now;
+            
             // TODO : gérer ça en plusieurs étapes
             //        1. Trouver une tuile
             //        2. Ensuite, rechercher les tuiles en faisant des sauts à partir de celle là
-
-            tile.TilesetPositions.ForEach(pos =>
+            
+            for (var x = 1; x < image.Width - 1; x++)
             {
-                for (var x = 1; x < image.Width - 1; x++)
-                {
-                    var matchFoundInColumn = false;
+                var matchFoundInColumn = false;
 
-                    for (var y = 1; y < image.Height - 1; y++)
+                for (var y = 1; y < image.Height - 1; y++)
+                {
+                    for (var i = 0; i < tile.TilesetPositions.Count; i++)
                     {
+                        var pos = tile.TilesetPositions[i];
                         var found = true;
 
                         for (var x_sprite = pos.X + 1; x_sprite < pos.X + tile.Width - 1; x_sprite++)
                         {
                             for (var y_sprite = pos.Y + 1; y_sprite < pos.Y + tile.Height - 1; y_sprite++)
-                            {
-                                if (!PixelsMatch(Tile.Tileset.GetPixel(x_sprite, y_sprite), image.GetPixel(x + x_sprite - pos.X, y + y_sprite - pos.Y)))
+                            { 
+                                if (!PixelsMatch(tileSet.GetPixel(x_sprite, y_sprite), image.GetPixel(x + x_sprite - pos.X, y + y_sprite - pos.Y)))
                                 {
                                     found = false;
                                     break;
@@ -55,13 +59,16 @@ namespace Orthogiciel.Lobotomario.Core
                             y += tile.Height - 1;
 
                             matchFoundInColumn = true;
-                        }
-                    }
+                            i = tile.TilesetPositions.Count;
 
-                    if (matchFoundInColumn)
-                        x += tile.Width - 1;
+                            currentDateDate = DateTime.Now;
+                        }
+                    }     
                 }
-            });            
+
+                if (matchFoundInColumn)
+                    x += tile.Width - 1;
+            }         
         }
 
         public static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
