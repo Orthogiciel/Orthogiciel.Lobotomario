@@ -13,52 +13,55 @@ namespace Orthogiciel.Lobotomario.Core
 {
     public static class ImageProcessor
     {
-        public static void MarkSprites(Bitmap sprite, Bitmap image)
+        public static void MarkSprites(Tile tile, Bitmap image)
         {
             // TODO : gérer ça en plusieurs étapes
             //        1. Trouver une tuile
             //        2. Ensuite, rechercher les tuiles en faisant des sauts à partir de celle là
 
-            for (var x = 0; x < image.Width - 1; x++)
+            tile.TilesetPositions.ForEach(pos =>
             {
-                var matchFoundInColumn = false;
-
-                for (var y = 0; y < image.Height - 1; y++)
+                for (var x = 1; x < image.Width - 1; x++)
                 {
-                    var found = true;
+                    var matchFoundInColumn = false;
 
-                    for (var x_sprite = 1; x_sprite < sprite.Width - 1; x_sprite++)
+                    for (var y = 1; y < image.Height - 1; y++)
                     {
-                        for (var y_sprite = 1; y_sprite < sprite.Height - 1; y_sprite++)
+                        var found = true;
+
+                        for (var x_sprite = pos.X + 1; x_sprite < pos.X + tile.Width - 1; x_sprite++)
                         {
-                            if (!PixelsMatch(sprite.GetPixel(x_sprite, y_sprite), image.GetPixel(x + x_sprite, y + y_sprite)))
+                            for (var y_sprite = pos.Y + 1; y_sprite < pos.Y + tile.Height - 1; y_sprite++)
                             {
-                                found = false;
-                                break;
+                                if (!PixelsMatch(Tile.Tileset.GetPixel(x_sprite, y_sprite), image.GetPixel(x + x_sprite - pos.X, y + y_sprite - pos.Y)))
+                                {
+                                    found = false;
+                                    break;
+                                }
                             }
+
+                            if (!found)
+                                break;
                         }
 
-                        if (!found)
-                            break;
-                    }
-
-                    if (found)
-                    {
-                        using (var g = Graphics.FromImage(image))
+                        if (found)
                         {
-                            var rectangle = new System.Drawing.Rectangle(x - 1, y - 1, sprite.Width, sprite.Height);
-                            g.DrawRectangle(new System.Drawing.Pen(System.Drawing.Color.Blue, 1f), rectangle);
+                            using (var g = Graphics.FromImage(image))
+                            {
+                                var rectangle = new System.Drawing.Rectangle(x - 1, y - 1, tile.Width, tile.Height);
+                                g.DrawRectangle(new System.Drawing.Pen(tile.MarkColor, 1f), rectangle);
+                            }
+
+                            y += tile.Height - 1;
+
+                            matchFoundInColumn = true;
                         }
-
-                        y += sprite.Height - 1;
-
-                        matchFoundInColumn = true;
                     }
-                }
 
-                if (matchFoundInColumn)
-                    x += sprite.Width - 1;
-            }
+                    if (matchFoundInColumn)
+                        x += tile.Width - 1;
+                }
+            });            
         }
 
         public static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)

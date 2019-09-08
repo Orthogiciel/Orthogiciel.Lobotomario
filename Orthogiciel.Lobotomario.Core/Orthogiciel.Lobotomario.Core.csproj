@@ -44,6 +44,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameObjects.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,6 +55,8 @@
     </Compile>
     <Compile Include="Screen.cs" />
     <Compile Include="Tile.cs" />
+    <Compile Include="Orientation.cs" />
+    <Compile Include="TileId.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -63,6 +66,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Block1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NES - Super Mario Bros - Tileset.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
