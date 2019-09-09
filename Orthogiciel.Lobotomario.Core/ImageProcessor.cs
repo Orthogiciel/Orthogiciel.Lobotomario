@@ -74,7 +74,7 @@ namespace Orthogiciel.Lobotomario.Core
         public static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
         {
             return spritePixel.A >= imagePixel.A - 5 && spritePixel.A <= imagePixel.A + 5 &&
-                   spritePixel.R >= imagePixel.R - 5 && spritePixel.R <= imagePixel.R + 5 &&
+                   spritePixel.R >= imagePixel.R - 40 && spritePixel.R <= imagePixel.R + 40 &&
                    spritePixel.G >= imagePixel.G - 5 && spritePixel.G <= imagePixel.G + 5 &&
                    spritePixel.B >= imagePixel.B - 5 && spritePixel.B <= imagePixel.B + 5;
         }
