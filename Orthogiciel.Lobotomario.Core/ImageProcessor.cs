@@ -13,65 +13,79 @@ namespace Orthogiciel.Lobotomario.Core
 {
     public static class ImageProcessor
     {
-        public static void MarkSprites(Tile tile, Bitmap image)
+        public static void DrawGrid(Bitmap snapshot)
         {
-            var tileSet = Tile.Tileset;
-            var currentDateDate = DateTime.Now;
-            
-            // TODO : gérer ça en plusieurs étapes
-            //        1. Trouver une tuile
-            //        2. Ensuite, rechercher les tuiles en faisant des sauts à partir de celle là
-            
-            for (var x = 1; x < image.Width - 1; x++)
+            var firstTilePosition = FindFirstTile(snapshot);
+
+            if (firstTilePosition != null)
             {
-                var matchFoundInColumn = false;
-
-                for (var y = 1; y < image.Height - 1; y++)
+                using (var g = Graphics.FromImage(snapshot))
                 {
-                    for (var i = 0; i < tile.TilesetPositions.Count; i++)
+                    var pen = new System.Drawing.Pen(System.Drawing.Color.White, 1f);
+                    var offsetX = firstTilePosition.Value.X % 16;
+                    var offsetY = firstTilePosition.Value.Y % 16;
+
+                    for (var x = offsetX; x < snapshot.Width; x += 16)
                     {
-                        var pos = tile.TilesetPositions[i];
-                        var found = true;
+                        g.DrawLine(pen, x, 0, x, snapshot.Height - 1);
+                    }
 
-                        for (var x_sprite = pos.X + 1; x_sprite < pos.X + tile.Width - 1; x_sprite++)
-                        {
-                            for (var y_sprite = pos.Y + 1; y_sprite < pos.Y + tile.Height - 1; y_sprite++)
-                            { 
-                                if (!PixelsMatch(tileSet.GetPixel(x_sprite, y_sprite), image.GetPixel(x + x_sprite - pos.X, y + y_sprite - pos.Y)))
-                                {
-                                    found = false;
-                                    break;
-                                }
-                            }
+                    for (var y = offsetY; y < snapshot.Height; y += 16)
+                    {
+                        g.DrawLine(pen, 0, y, snapshot.Width - 1, y);
+                    }
 
-                            if (!found)
-                                break;
-                        }
-
-                        if (found)
-                        {
-                            using (var g = Graphics.FromImage(image))
-                            {
-                                var rectangle = new System.Drawing.Rectangle(x - 1, y - 1, tile.Width, tile.Height);
-                                g.DrawRectangle(new System.Drawing.Pen(tile.MarkColor, 1f), rectangle);
-                            }
-
-                            y += tile.Height - 1;
-
-                            matchFoundInColumn = true;
-                            i = tile.TilesetPositions.Count;
-
-                            currentDateDate = DateTime.Now;
-                        }
-                    }     
+                    var rectangle = new System.Drawing.Rectangle(firstTilePosition.Value.X, firstTilePosition.Value.Y, 16, 16);
+                    g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Blue), rectangle);
                 }
-
-                if (matchFoundInColumn)
-                    x += tile.Width - 1;
-            }         
+            }
         }
 
-        public static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
+        public static Point? FindFirstTile(Bitmap snapshot)
+        {
+            var tileset = Tile.Tileset;
+
+            for (var idx = 0; idx < GameObjects.Tiles.Count; idx++)
+            {
+                var tile = GameObjects.Tiles[idx];
+
+                for (var y = snapshot.Height - tile.Height - 1; y > 0; y--)
+                {
+                    for (var x = 0; x < snapshot.Width; x++)
+                    {
+                        for (var i = 0; i < tile.TilesetPositions.Count; i++)
+                        {
+                            var tilesetPosition = tile.TilesetPositions[i];
+
+                            if (FindTile(snapshot, tileset, tile, tilesetPosition, x, y))
+                            {
+                                return new Point(x, y);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static bool FindTile(Bitmap snapshot, Bitmap tileset, Tile tile, Point pos, int x, int y)
+        {
+            for (var x_tile = 0; x_tile < tile.Width - 1; x_tile++)
+            {
+                for (var y_tile = 0; y_tile < tile.Height - 1; y_tile++)
+                {
+                    if (!PixelsMatch(tileset.GetPixel(pos.X + x_tile, pos.Y + y_tile), snapshot.GetPixel(x + x_tile, y + y_tile)))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
         {
             return spritePixel.A >= imagePixel.A - 5 && spritePixel.A <= imagePixel.A + 5 &&
                    spritePixel.R >= imagePixel.R - 40 && spritePixel.R <= imagePixel.R + 40 &&
