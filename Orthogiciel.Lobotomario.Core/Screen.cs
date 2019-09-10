@@ -25,7 +25,6 @@ namespace Orthogiciel.Lobotomario.Core
         public ImageSource GetSnapshot()
         {
             var snapshot = CaptureWindow(this.EmulatorProcess.MainWindowHandle);
-            //ImageProcessor.DrawGrid((Bitmap)snapshot);
             ImageProcessor.MarkTiles((Bitmap)snapshot, true);
 
             return ConvertToImageSource(snapshot);

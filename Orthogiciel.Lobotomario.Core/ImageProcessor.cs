@@ -43,7 +43,9 @@ namespace Orthogiciel.Lobotomario.Core
                                 {
                                     using (var g = Graphics.FromImage(snapshot))
                                     {
-                                        g.DrawRectangle(pen, new Rectangle(x, y, tile.Width - 1, tile.Height - 1));
+                                        //g.DrawRectangle(pen, new Rectangle(x, y, tile.Width - 1, tile.Height - 1));
+                                        var rectangle = new Rectangle(x, y, tile.Width - 1, tile.Height - 1);
+                                        g.FillRectangle(new SolidBrush(pen.Color), rectangle);
                                     }
 
                                     break;
@@ -108,9 +110,9 @@ namespace Orthogiciel.Lobotomario.Core
 
         private static bool FindTile(Bitmap snapshot, Bitmap tileset, Tile tile, Point pos, int x, int y)
         {
-            for (var x_tile = 1; x_tile < tile.Width - 1; x_tile++)
+            for (var x_tile = 1; x_tile < tile.Width - 2; x_tile++)
             {
-                for (var y_tile = 1; y_tile < tile.Height - 1; y_tile++)
+                for (var y_tile = 1; y_tile < tile.Height - 2; y_tile++)
                 {
                     if ((x + x_tile >= snapshot.Width) || (y + y_tile >= snapshot.Height) || !PixelsMatch(tileset.GetPixel(pos.X + x_tile, pos.Y + y_tile), snapshot.GetPixel(x + x_tile, y + y_tile)))
                     {
@@ -124,10 +126,9 @@ namespace Orthogiciel.Lobotomario.Core
 
         private static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
         {
-            return spritePixel.A >= imagePixel.A - 5 && spritePixel.A <= imagePixel.A + 5 &&
-                   spritePixel.R >= imagePixel.R - 40 && spritePixel.R <= imagePixel.R + 40 &&
-                   spritePixel.G >= imagePixel.G - 5 && spritePixel.G <= imagePixel.G + 5 &&
-                   spritePixel.B >= imagePixel.B - 5 && spritePixel.B <= imagePixel.B + 5;
+            return spritePixel.A < 255 || (spritePixel.R >= imagePixel.R - 40 && spritePixel.R <= imagePixel.R + 40 &&
+                                           spritePixel.G >= imagePixel.G - 5 && spritePixel.G <= imagePixel.G + 5 &&
+                                           spritePixel.B >= imagePixel.B - 5 && spritePixel.B <= imagePixel.B + 5);
         }
     }
 }

@@ -66,9 +66,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Block1.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Tileset.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
