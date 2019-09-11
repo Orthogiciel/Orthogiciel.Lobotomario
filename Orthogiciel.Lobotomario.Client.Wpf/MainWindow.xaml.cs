@@ -40,7 +40,7 @@ namespace Orthogiciel.Lobotomario.Client.Wpf
             {
                 //var snapshot = this.Screen.GetSnapshot();
                 //this.Worker.ReportProgress(0, this.Screen.GetSnapshot());  
-                Dispatcher.Invoke(() => this.ImgScreenshot.Source = this.Screen.GetSnapshot());
+                Dispatcher.Invoke(() => this.ImgScreenshot.Source = this.Screen.TakeSnapshot());
                 Thread.Sleep(100); // Lower the delay for a faster refresh rate
             }
         }

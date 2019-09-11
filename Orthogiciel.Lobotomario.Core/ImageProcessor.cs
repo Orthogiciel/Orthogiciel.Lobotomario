@@ -15,28 +15,39 @@ namespace Orthogiciel.Lobotomario.Core
     {
         public static void MarkPlayer(Bitmap snapshot)
         {
-            var spritesheet = PlayerForm.Spritesheet;
+            //var spritesheet = PlayerForm.Spritesheet;
+            var playerColor = System.Drawing.Color.FromArgb(255, 177, 52, 37);
+            var pen = new System.Drawing.Pen(System.Drawing.Color.Blue, 1f);
 
             for (var x = 0; x < snapshot.Width; x++)
             {
                 for (var y = snapshot.Height - 1; y > 0; y--)
                 {
-                    foreach (PlayerForm playerForm in GameObjects.PlayerForms)
+                    if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
                     {
-                        var pen = new System.Drawing.Pen(playerForm.MarkColor, 1f);
-
-                        foreach (Point pos in playerForm.SpritesheetPositions)
+                        using (var g = Graphics.FromImage(snapshot))
                         {
-                            if (FindSprite(snapshot, spritesheet, playerForm, pos, x, y))
-                            {
-                                using (var g = Graphics.FromImage(snapshot))
-                                {
-                                    g.DrawRectangle(pen, new Rectangle(x, y, playerForm.Width - 1, playerForm.Height - 1));
-                                    return;
-                                }
-                            }
+                            g.DrawRectangle(pen, new Rectangle(x - 4, y - 16, 16, 16));
+                            return;
                         }
                     }
+
+                    //foreach (PlayerForm playerForm in GameObjects.PlayerForms)
+                    //{
+                    //    var pen = new System.Drawing.Pen(playerForm.MarkColor, 1f);
+
+                    //    foreach (Point pos in playerForm.SpritesheetPositions)
+                    //    {
+                    //        if (FindSprite(snapshot, spritesheet, playerForm, pos, x, y))
+                    //        {
+                    //            using (var g = Graphics.FromImage(snapshot))
+                    //            {
+                    //                g.DrawRectangle(pen, new Rectangle(x, y, playerForm.Width - 1, playerForm.Height - 1));
+                    //                return;
+                    //            }
+                    //        }
+                    //    }
+                    //}
                 }
             }
         }
