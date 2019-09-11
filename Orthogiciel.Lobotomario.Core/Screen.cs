@@ -26,7 +26,13 @@ namespace Orthogiciel.Lobotomario.Core
         {
             var snapshot = CaptureWindow(this.EmulatorProcess.MainWindowHandle);
             ImageProcessor.MarkTiles((Bitmap)snapshot, true);
+            return ConvertToImageSource(snapshot);
+        }
 
+        public ImageSource TakeSnapshot()
+        {
+            var snapshot = CaptureGameScreen(EmulatorProcess.MainWindowHandle);
+            
             return ConvertToImageSource(snapshot);
         }
 
@@ -81,6 +87,51 @@ namespace Orthogiciel.Lobotomario.Core
             Image img = Image.FromHbitmap(hBitmap);
             // free up the Bitmap object
             GDI32.DeleteObject(hBitmap);
+            return img;
+        }
+
+        public Image CaptureGameScreen(IntPtr handle)
+        {
+            int windowTopOffset = 55;
+            IntPtr hdcSrc = User32.GetWindowDC(handle);
+
+            User32.RECT windowRect = new User32.RECT();
+            User32.GetWindowRect(handle, ref windowRect);
+
+            int width = windowRect.right - windowRect.left - 20;
+            int height = windowRect.bottom - windowRect.top - windowTopOffset - 8;
+
+            int diffx = 0;
+            int offsetx = 0;
+
+            int diffy = 0;
+            int offsety = 0;
+
+            if (height / width < 0.9375)
+            {
+                var idealWidth = (int)(height * 1.0667);
+                diffx = width - idealWidth > 0 ? width - idealWidth : 0;
+                offsetx = diffx / 2;
+            }
+            else if (height / width > 0.9375)
+            {
+                var idealHeight = (int)(width * 0.9375);
+                diffy = height - idealHeight > 0 ? height - idealHeight : 0;
+                offsety = diffy / 2;
+            }
+
+            IntPtr hdcDest = GDI32.CreateCompatibleDC(hdcSrc);
+            IntPtr hBitmap = GDI32.CreateCompatibleBitmap(hdcSrc, width - diffx, height - diffy);
+            IntPtr hOld = GDI32.SelectObject(hdcDest, hBitmap);
+
+            GDI32.BitBlt(hdcDest, 0, 0, width - offsetx, height - offsety, hdcSrc, 10 + offsetx, windowTopOffset + offsety, GDI32.SRCCOPY);
+
+            GDI32.SelectObject(hdcDest, hOld);
+            GDI32.DeleteDC(hdcDest);
+            User32.ReleaseDC(handle, hdcSrc);
+            Image img = Image.FromHbitmap(hBitmap);
+            GDI32.DeleteObject(hBitmap);
+
             return img;
         }
 

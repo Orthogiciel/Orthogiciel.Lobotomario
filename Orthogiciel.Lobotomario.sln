@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orthogiciel.Lobotomario.Cli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orthogiciel.Lobotomario.Core", "Orthogiciel.Lobotomario.Core\Orthogiciel.Lobotomario.Core.csproj", "{A373F117-2971-448B-9507-BE65BB906FF1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{E5F97A2E-CB3D-4CB1-8067-FC4A8C7F91E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orthogiciel.Lobotomario.Tools.SnapshotViewer", "Orthogiciel.Lobotomario.Tools.SnapshotViewer\Orthogiciel.Lobotomario.Tools.SnapshotViewer.csproj", "{0741A1CB-E791-436E-8242-A32F8CB0261D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,9 +31,16 @@ Global
 		{A373F117-2971-448B-9507-BE65BB906FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A373F117-2971-448B-9507-BE65BB906FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A373F117-2971-448B-9507-BE65BB906FF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0741A1CB-E791-436E-8242-A32F8CB0261D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0741A1CB-E791-436E-8242-A32F8CB0261D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0741A1CB-E791-436E-8242-A32F8CB0261D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0741A1CB-E791-436E-8242-A32F8CB0261D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0741A1CB-E791-436E-8242-A32F8CB0261D} = {E5F97A2E-CB3D-4CB1-8067-FC4A8C7F91E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB21ACB0-B92B-46E0-ADF7-46FC81E97DF6}
