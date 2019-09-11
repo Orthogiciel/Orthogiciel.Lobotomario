@@ -43,7 +43,7 @@ namespace Orthogiciel.Lobotomario.Tools.SnapshotViewer
                     imageStats.Text = $"{imageSource.Width} x {imageSource.Height} ({imageSource.Width / imageSource.Height})";
                 });
 
-                Thread.Sleep(10);
+                Thread.Sleep(2);
             }
         }
     }
