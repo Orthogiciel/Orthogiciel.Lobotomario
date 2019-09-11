@@ -1,0 +1,4 @@
+TODO :
+1. Créer des interfaces ICollidable, IMoveable, etc pour les GameObjects
+2. Découpler le client WPF du processing, en se créant un Engine qu'on va démarrer et auquel le client va s'abonner pour être notifié
+   d'une fin de processing

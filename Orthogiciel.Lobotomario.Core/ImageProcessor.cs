@@ -13,6 +13,34 @@ namespace Orthogiciel.Lobotomario.Core
 {
     public static class ImageProcessor
     {
+        public static void MarkPlayer(Bitmap snapshot)
+        {
+            var spritesheet = PlayerForm.Spritesheet;
+
+            for (var x = 0; x < snapshot.Width; x++)
+            {
+                for (var y = snapshot.Height - 1; y > 0; y--)
+                {
+                    foreach (PlayerForm playerForm in GameObjects.PlayerForms)
+                    {
+                        var pen = new System.Drawing.Pen(playerForm.MarkColor, 1f);
+
+                        foreach (Point pos in playerForm.SpritesheetPositions)
+                        {
+                            if (FindSprite(snapshot, spritesheet, playerForm, pos, x, y))
+                            {
+                                using (var g = Graphics.FromImage(snapshot))
+                                {
+                                    g.DrawRectangle(pen, new Rectangle(x, y, playerForm.Width - 1, playerForm.Height - 1));
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public static void MarkTiles(Bitmap snapshot, bool drawGrid)
         {
             var firstTilePosition = FindFirstTile(snapshot);
@@ -35,11 +63,11 @@ namespace Orthogiciel.Lobotomario.Core
                     {
                         for (var x = offsetX; x < snapshot.Width; x += tile.Width)
                         {
-                            for (var i = 0; i < tile.TilesetPositions.Count; i++)
+                            for (var i = 0; i < tile.SpritesheetPositions.Count; i++)
                             {
-                                var tilesetPosition = tile.TilesetPositions[i];
+                                var tilesetPosition = tile.SpritesheetPositions[i];
 
-                                if (FindTile(snapshot, tileset, tile, tilesetPosition, x, y))
+                                if (FindSprite(snapshot, tileset, tile, tilesetPosition, x, y))
                                 {
                                     using (var g = Graphics.FromImage(snapshot))
                                     {
@@ -92,11 +120,11 @@ namespace Orthogiciel.Lobotomario.Core
                 {
                     for (var x = 0; x < snapshot.Width; x++)
                     {
-                        for (var i = 0; i < tile.TilesetPositions.Count; i++)
+                        for (var i = 0; i < tile.SpritesheetPositions.Count; i++)
                         {
-                            var tilesetPosition = tile.TilesetPositions[i];
+                            var tilesetPosition = tile.SpritesheetPositions[i];
 
-                            if (FindTile(snapshot, tileset, tile, tilesetPosition, x, y))
+                            if (FindSprite(snapshot, tileset, tile, tilesetPosition, x, y))
                             {
                                 return new Point(x, y);
                             }
@@ -108,13 +136,13 @@ namespace Orthogiciel.Lobotomario.Core
             return null;
         }
 
-        private static bool FindTile(Bitmap snapshot, Bitmap tileset, Tile tile, Point pos, int x, int y)
+        private static bool FindSprite(Bitmap snapshot, Bitmap tileset, GameObject gameObject, Point pos, int x, int y)
         {
-            for (var x_tile = 1; x_tile < tile.Width - 2; x_tile++)
+            for (var x_object = 1; x_object < gameObject.Width - 2; x_object++)
             {
-                for (var y_tile = 1; y_tile < tile.Height - 2; y_tile++)
+                for (var y_object = 1; y_object < gameObject.Height - 2; y_object++)
                 {
-                    if ((x + x_tile >= snapshot.Width) || (y + y_tile >= snapshot.Height) || !PixelsMatch(tileset.GetPixel(pos.X + x_tile, pos.Y + y_tile), snapshot.GetPixel(x + x_tile, y + y_tile)))
+                    if ((x + x_object >= snapshot.Width) || (y + y_object >= snapshot.Height) || !PixelsMatch(tileset.GetPixel(pos.X + x_object, pos.Y + y_object), snapshot.GetPixel(x + x_object, y + y_object)))
                     {
                         return false;
                     }
@@ -126,9 +154,9 @@ namespace Orthogiciel.Lobotomario.Core
 
         private static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
         {
-            return spritePixel.A < 255 || (spritePixel.R >= imagePixel.R - 40 && spritePixel.R <= imagePixel.R + 40 &&
-                                           spritePixel.G >= imagePixel.G - 5 && spritePixel.G <= imagePixel.G + 5 &&
-                                           spritePixel.B >= imagePixel.B - 5 && spritePixel.B <= imagePixel.B + 5);
+            return (spritePixel.A < 255) || (spritePixel.R >= imagePixel.R - 40 && spritePixel.R <= imagePixel.R + 40 &&
+                                             spritePixel.G >= imagePixel.G - 5 && spritePixel.G <= imagePixel.G + 5 &&
+                                             spritePixel.B >= imagePixel.B - 5 && spritePixel.B <= imagePixel.B + 5);
         }
     }
 }
