@@ -16,7 +16,7 @@ namespace Orthogiciel.Lobotomario.Core
             {
                 new Mario()
                 {
-                    PlayerForm = MarioForms.Mini,
+                    MarioForm = MarioForms.Mini,
                     Width = 16,
                     Height = 16,
                     SpritesheetPositions = new List<Point>()

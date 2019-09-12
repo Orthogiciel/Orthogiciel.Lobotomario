@@ -4,7 +4,7 @@ namespace Orthogiciel.Lobotomario.Core.GameObjects
 {
     public class Mario : GameObject
     {
-        public MarioForms PlayerForm { get; set; }
+        public MarioForms MarioForm { get; set; }
         
         public static Bitmap Spritesheet
         {
