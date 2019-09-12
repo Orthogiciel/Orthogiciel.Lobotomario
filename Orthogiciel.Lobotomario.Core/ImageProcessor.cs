@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Orthogiciel.Lobotomario.Core.GameObjects;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Orthogiciel.Lobotomario.Core
 {
     public class ImageProcessor
     {
+        private readonly GameObjectRepository gameObjectRepository;
+
+        public ImageProcessor(GameObjectRepository gameObjectRepository)
+        {
+            this.gameObjectRepository = gameObjectRepository;
+        }
+
         public void MarkPlayer(Bitmap snapshot)
         {
             //var spritesheet = PlayerForm.Spritesheet;
@@ -65,9 +64,9 @@ namespace Orthogiciel.Lobotomario.Core
                 var offsetX = firstTilePosition.Value.X % 16;
                 var offsetY = firstTilePosition.Value.Y % 16;                
 
-                for (var idx = 0; idx < GameObjects.Tiles.Count; idx++)
+                for (var idx = 0; idx < gameObjectRepository.Tiles.Count; idx++)
                 {
-                    var tile = GameObjects.Tiles[idx];
+                    var tile = gameObjectRepository.Tiles[idx];
                     var pen = new System.Drawing.Pen(tile.MarkColor, 1f);
 
                     for (var y = offsetY; y < snapshot.Height; y += tile.Height)
@@ -123,9 +122,9 @@ namespace Orthogiciel.Lobotomario.Core
         {
             var tileset = Tile.Tileset;
 
-            for (var idx = 0; idx < GameObjects.Tiles.Count; idx++)
+            for (var idx = 0; idx < gameObjectRepository.Tiles.Count; idx++)
             {
-                var tile = GameObjects.Tiles[idx];
+                var tile = gameObjectRepository.Tiles[idx];
 
                 for (var y = snapshot.Height - tile.Height - 1; y > 0; y--)
                 {

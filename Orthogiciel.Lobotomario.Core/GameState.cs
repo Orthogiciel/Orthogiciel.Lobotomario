@@ -8,5 +8,6 @@ namespace Orthogiciel.Lobotomario.Core
 {
     public class GameState
     {
+        
     }
 }

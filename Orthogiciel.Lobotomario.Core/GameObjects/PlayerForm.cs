@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Orthogiciel.Lobotomario.Core
+namespace Orthogiciel.Lobotomario.Core.GameObjects
 {
     public class PlayerForm : GameObject
     {

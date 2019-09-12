@@ -16,6 +16,8 @@ namespace Orthogiciel.Lobotomario.Core
 
         private readonly Screen screen;
 
+        private readonly GameObjectRepository gameObjectRepository;
+
         private readonly ImageProcessor imageProcessor;
 
         private readonly Input input;
@@ -33,7 +35,8 @@ namespace Orthogiciel.Lobotomario.Core
                 emulatorProcess = Process.GetProcessesByName(processName).FirstOrDefault();
 
                 screen = new Screen(emulatorProcess);
-                imageProcessor = new ImageProcessor();
+                gameObjectRepository = new GameObjectRepository();
+                imageProcessor = new ImageProcessor(gameObjectRepository);
                 input = new Input();
                 gameState = new GameState();
                 

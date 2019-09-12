@@ -1,18 +1,16 @@
-﻿using System;
+﻿using Orthogiciel.Lobotomario.Core.GameObjects;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Orthogiciel.Lobotomario.Core
 {
-    public static class GameObjects
+    public class GameObjectRepository
     {
-        public static List<Tile> Tiles { get; private set; }
-        public static List<PlayerForm> PlayerForms { get; private set; }
+        public List<Tile> Tiles { get; private set; }
 
-        static GameObjects()
+        public List<PlayerForm> PlayerForms { get; private set; }
+
+        public GameObjectRepository()
         {
             PlayerForms = new List<PlayerForm>()
             {
