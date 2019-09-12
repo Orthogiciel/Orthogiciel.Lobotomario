@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace Orthogiciel.Lobotomario.Core.GameObjects
 {
     public class Tile : GameObject
     {
+        public TileTypes TileType { get; set; }
+
         public static Bitmap Tileset
         {
             get { return Properties.Resources.Tileset; }

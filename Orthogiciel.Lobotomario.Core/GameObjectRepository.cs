@@ -8,15 +8,15 @@ namespace Orthogiciel.Lobotomario.Core
     {
         public List<Tile> Tiles { get; private set; }
 
-        public List<PlayerForm> PlayerForms { get; private set; }
+        public List<Mario> Marios { get; private set; }
 
         public GameObjectRepository()
         {
-            PlayerForms = new List<PlayerForm>()
+            Marios = new List<Mario>()
             {
-                new PlayerForm()
+                new Mario()
                 {
-                    Id = PlayerFormIds.Mini,
+                    PlayerForm = MarioForms.Mini,
                     Width = 16,
                     Height = 16,
                     SpritesheetPositions = new List<Point>()
@@ -28,7 +28,7 @@ namespace Orthogiciel.Lobotomario.Core
                 },
                 //new PlayerForm()
                 //{
-                //    Id = PlayerFormIds.Super,
+                //    PlayerForm = MarioForms.Super,
                 //    Width = 16,
                 //    Height = 32,
                 //    SpritesheetPositions = new List<Point>()
@@ -44,7 +44,7 @@ namespace Orthogiciel.Lobotomario.Core
             {                
                 new Tile()
                 {
-                    Id = TileId.UnbreakableBlock,
+                    TileType = TileTypes.UnbreakableBlock,
                     Width = 16,
                     Height = 16,
                     SpritesheetPositions = new List<Point>()
@@ -59,7 +59,7 @@ namespace Orthogiciel.Lobotomario.Core
                 },
                 new Tile()
                 {
-                    Id = TileId.BreakableBlock,
+                    TileType = TileTypes.BreakableBlock,
                     Width = 16,
                     Height = 16,
                     SpritesheetPositions = new List<Point>()
