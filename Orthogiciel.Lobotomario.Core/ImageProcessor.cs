@@ -11,9 +11,9 @@ using System.Windows.Media.Imaging;
 
 namespace Orthogiciel.Lobotomario.Core
 {
-    public static class ImageProcessor
+    public class ImageProcessor
     {
-        public static void MarkPlayer(Bitmap snapshot)
+        public void MarkPlayer(Bitmap snapshot)
         {
             //var spritesheet = PlayerForm.Spritesheet;
             var playerColor = System.Drawing.Color.FromArgb(255, 177, 52, 37);
@@ -52,7 +52,7 @@ namespace Orthogiciel.Lobotomario.Core
             }
         }
 
-        public static void MarkTiles(Bitmap snapshot, bool drawGrid)
+        public void MarkTiles(Bitmap snapshot, bool drawGrid)
         {
             var firstTilePosition = FindFirstTile(snapshot);
 
@@ -96,7 +96,7 @@ namespace Orthogiciel.Lobotomario.Core
             }
         }
 
-        public static void DrawGrid(Bitmap snapshot, Point firstTilePosition)
+        public void DrawGrid(Bitmap snapshot, Point firstTilePosition)
         {
             using (var g = Graphics.FromImage(snapshot))
             {
@@ -119,7 +119,7 @@ namespace Orthogiciel.Lobotomario.Core
             }
         }
 
-        private static Point? FindFirstTile(Bitmap snapshot)
+        private Point? FindFirstTile(Bitmap snapshot)
         {
             var tileset = Tile.Tileset;
 
@@ -147,7 +147,7 @@ namespace Orthogiciel.Lobotomario.Core
             return null;
         }
 
-        private static bool FindSprite(Bitmap snapshot, Bitmap tileset, GameObject gameObject, Point pos, int x, int y)
+        private bool FindSprite(Bitmap snapshot, Bitmap tileset, GameObject gameObject, Point pos, int x, int y)
         {
             for (var x_object = 1; x_object < gameObject.Width - 2; x_object++)
             {
@@ -163,7 +163,7 @@ namespace Orthogiciel.Lobotomario.Core
             return true;
         }
 
-        private static bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
+        private bool PixelsMatch(System.Drawing.Color spritePixel, System.Drawing.Color imagePixel)
         {
             return (spritePixel.A < 255) || (spritePixel.R >= imagePixel.R - 40 && spritePixel.R <= imagePixel.R + 40 &&
                                              spritePixel.G >= imagePixel.G - 5 && spritePixel.G <= imagePixel.G + 5 &&

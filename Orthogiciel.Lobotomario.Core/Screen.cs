@@ -16,32 +16,26 @@ namespace Orthogiciel.Lobotomario.Core
 {
     public class Screen
     {
-        public Process EmulatorProcess { get; private set; }
+        private readonly Process emulatorProcess;
 
-        public Screen(string processName)
+        public Screen(Process emulatorProcess)
         {
-            this.EmulatorProcess = Process.GetProcessesByName(processName).FirstOrDefault();
+            this.emulatorProcess = emulatorProcess;
         }
 
-        public ImageSource TakeSnapshot()
+        public Bitmap TakeSnapshot()
         {
-            var snapshot = (Bitmap)CaptureGameScreen(EmulatorProcess.MainWindowHandle);
-            ImageProcessor.MarkPlayer(snapshot);
-            ImageProcessor.MarkTiles(snapshot, false);
-
-            return ConvertToImageSource(snapshot);
+            return (Bitmap)CaptureGameScreen(emulatorProcess.MainWindowHandle);
         }
 
         public ImageSource ConvertToImageSource(Image image)
         {
             var bitmap = new BitmapImage();
-
+            
             using (var stream = new MemoryStream())
             {
                 image.Save(stream, ImageFormat.Jpeg);
-
                 stream.Seek(0, SeekOrigin.Begin);
-
                 bitmap.BeginInit();
                 bitmap.StreamSource = stream;
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
@@ -84,13 +78,17 @@ namespace Orthogiciel.Lobotomario.Core
             IntPtr hdcDest = GDI32.CreateCompatibleDC(hdcSrc);
             IntPtr hBitmap = GDI32.CreateCompatibleBitmap(hdcSrc, width - diffx, height - diffy);
             IntPtr hOld = GDI32.SelectObject(hdcDest, hBitmap);
-
+            
             GDI32.BitBlt(hdcDest, 0, 0, width - offsetx, height - offsety, hdcSrc, 10 + offsetx, windowTopOffset + offsety, GDI32.SRCCOPY);
 
             GDI32.SelectObject(hdcDest, hOld);
             GDI32.DeleteDC(hdcDest);
             User32.ReleaseDC(handle, hdcSrc);
             Image img = Image.FromHbitmap(hBitmap);
+            Debug.Print(img.HorizontalResolution.ToString());
+            Debug.Print(img.VerticalResolution.ToString());
+            Debug.Print(img.Width.ToString());
+            Debug.Print(img.Height.ToString());
             GDI32.DeleteObject(hBitmap);
 
             return ResizeImage(img, 256, 240);

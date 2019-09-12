@@ -1,50 +1,33 @@
 ﻿using Orthogiciel.Lobotomario.Core;
-using System.ComponentModel;
-using System.Threading;
+using System;
 using System.Windows;
 
 namespace Orthogiciel.Lobotomario.Tools.SnapshotViewer
 {
     public partial class MainWindow : Window
     {
-        private readonly Screen screen;
-
-        private BackgroundWorker backgroundWorker;
-
-        private bool isRunning = true;
+        private readonly Engine engine;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            screen = new Screen("Mesen");
-            backgroundWorker = new BackgroundWorker();
-            backgroundWorker.DoWork += backgroundWorker_DoWork;
-            backgroundWorker.RunWorkerAsync();
+            DataContext = this;
+            engine = new Engine();
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnInitialized(EventArgs e)
         {
-            isRunning = false;
-            base.OnClosing(e);
-        }
-
-        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            while (isRunning)
+            try
             {
-                Dispatcher.Invoke(() => 
-                {
-                    var imageSource = screen.TakeSnapshot();
-                    imageViewer.Width = imageSource.Width;
-                    imageViewer.Height = imageSource.Height;
-                    imageViewer.Source = imageSource;
-
-                    imageStats.Text = $"{imageSource.Width} x {imageSource.Height} ({imageSource.Width / imageSource.Height})";
-                });
-
-                Thread.Sleep(2);
+                engine.Start();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            base.OnInitialized(e);
         }
     }
 }
