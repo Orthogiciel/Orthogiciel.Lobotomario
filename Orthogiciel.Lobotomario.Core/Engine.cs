@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -85,10 +86,21 @@ namespace Orthogiciel.Lobotomario.Core
                     // Ici au lieu de dessinger par dessus le screenshot, il faut updater le GameState avec la position de chaque élément
                     // trouvé.
 
-                    imageProcessor.MarkPlayer(snapshot); // On ne veut plus dessiner par dessus les screenshots.
-                    imageProcessor.MarkTiles(snapshot, false); // On ne veut plus dessiner par dessus les screenshots.
+                    var newGameState = new List<GameObject>();
+                    var player = imageProcessor.FindPlayer(snapshot);
+                    var tiles = imageProcessor.FindTiles(snapshot);
+
+                    if (player != null)
+                    {
+                        newGameState.Add(player);
+                    }
+
+                    newGameState.AddRange(tiles);
 
                     // Update game state here.
+
+                    gameState.PreviousState = gameState.CurrentState;
+                    gameState.CurrentState = newGameState;
 
                     Updated?.Invoke(this, gameState);
 

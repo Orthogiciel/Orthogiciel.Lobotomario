@@ -17,8 +17,7 @@ namespace Orthogiciel.Lobotomario.Core
                 new Mario()
                 {
                     MarioForm = MarioForms.Mini,
-                    Width = 16,
-                    Height = 16,
+                    Bounds = new Rectangle(0, 0, 16, 16),
                     SpritesheetPositions = new List<Point>()
                     {
                         new Point(80,35), new Point(97,34), new Point(114,34), new Point(131,34), new Point(148,34), new Point(165,34), new Point(182,34), new Point(199,34), new Point(216,34), new Point(233,34), new Point(250,34), new Point(267,34), new Point(284,34), new Point(301,34),
@@ -45,8 +44,7 @@ namespace Orthogiciel.Lobotomario.Core
                 new Tile()
                 {
                     TileType = TileTypes.UnbreakableBlock,
-                    Width = 16,
-                    Height = 16,
+                    Bounds = new Rectangle(0, 0, 16, 16),
                     SpritesheetPositions = new List<Point>()
                     {
                         new Point(0,0), new Point(0,32), new Point(0,64), new Point(0,96),
@@ -60,8 +58,7 @@ namespace Orthogiciel.Lobotomario.Core
                 new Tile()
                 {
                     TileType = TileTypes.BreakableBlock,
-                    Width = 16,
-                    Height = 16,
+                    Bounds = new Rectangle(0, 0, 16, 16),
                     SpritesheetPositions = new List<Point>()
                     {
                         new Point(16,0), new Point(16,32), new Point(16,64), new Point(16,96),
