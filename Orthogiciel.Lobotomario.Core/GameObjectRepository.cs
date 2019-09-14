@@ -25,11 +25,10 @@ namespace Orthogiciel.Lobotomario.Core
                     },
                     MarkColor = Color.Pink
                 },
-                //new PlayerForm()
+                //new Mario()
                 //{
-                //    PlayerForm = MarioForms.Super,
-                //    Width = 16,
-                //    Height = 32,
+                //    MarioForm = MarioForms.Super,
+                //    Bounds = new Rectangle(0, 0, 16, 32),
                 //    SpritesheetPositions = new List<Point>()
                 //    {
                 //        new Point(80,1), new Point(97,1), new Point(114,1), new Point(131,1), new Point(148,1), new Point(165,1), new Point(182,1), new Point(199,1), new Point(216,1), new Point(233,1), new Point(250,1), new Point(267,1), new Point(284,1), new Point(301,1),

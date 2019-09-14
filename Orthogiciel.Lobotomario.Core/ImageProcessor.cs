@@ -14,13 +14,14 @@ namespace Orthogiciel.Lobotomario.Core
         }
 
         //-------------------------------------------------------------------------------------------------------------------------------------------------
-        // Approche hyper basique qui ne fait que chercher le premier pixel d'une couleur à l'intérieur du screenshot, et approximer la position du joueur
-        // à partir de la position de ce pixel.
+        // Recherche d'un pixel nous indiquant que Mario est peut-être à l'intérieur d'une région autour de point, puis recherche précise d'une sprite
+        // de Mario dans les alentours. 
+        // À améliorer : on pourrait garder en mémoire les zones déjà examinées pour ne pas repasser dessus.
         //-------------------------------------------------------------------------------------------------------------------------------------------------
         public Mario FindPlayer(Bitmap snapshot)
         {
             var spritesheet = Mario.Spritesheet;
-            var playerColor = System.Drawing.Color.FromArgb(255, 177, 52, 37);
+            var playerColor = Color.FromArgb(255, 177, 52, 37);
 
             for (var x = 0; x < snapshot.Width; x++)
             {
@@ -28,7 +29,18 @@ namespace Orthogiciel.Lobotomario.Core
                 {
                     if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
                     {
-                        return new Mario() { Bounds = new Rectangle(x - 4, y - 16, 16, 16) };
+                        // Vérifie si on peut trouver une occurence d'une des sprites de Mario
+                        foreach (Mario mario in gameObjectRepository.Marios)
+                        {
+                            var bounds = FindGameObjectInZone(snapshot, new Rectangle(x - 8, y - 31, 23, 62), mario, spritesheet);
+
+                            if (bounds.HasValue)
+                            {
+                                return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value };
+                            }
+                        }
+
+                        y -= 31;
                     }
                 }
             }
@@ -160,6 +172,46 @@ namespace Orthogiciel.Lobotomario.Core
                 var rectangle = new Rectangle(firstTilePosition.X, firstTilePosition.Y, 16, 16);
                 g.FillRectangle(new SolidBrush(System.Drawing.Color.Blue), rectangle);
             }
+        }
+
+        private Rectangle? FindGameObjectInZone(Bitmap snapshot, Rectangle bounds, GameObject gameObject, Bitmap spritesheet)
+        {
+            foreach (Point spritePos in gameObject.SpritesheetPositions)
+            {
+                for (var x = bounds.X; x < bounds.X + bounds.Width; x++)
+                {
+                    for (var y = bounds.Y; y < bounds.Y + bounds.Height; y++)
+                    {
+                        var isMatch = true;
+
+                        for (var x_sprite = 1; x_sprite < gameObject.Bounds.Width - 1; x_sprite++)
+                        {
+                            for (var y_sprite = 1; y_sprite < gameObject.Bounds.Height - 1; y_sprite++)
+                            {
+                                if (x + x_sprite < 0 || x + x_sprite >= snapshot.Width || y + y_sprite < 0 || y + y_sprite >= snapshot.Height)
+                                {
+                                    isMatch = false;
+                                    break;
+                                }
+
+                                if (!PixelsMatch(spritesheet.GetPixel(spritePos.X + x_sprite, spritePos.Y + y_sprite), snapshot.GetPixel(x + x_sprite, y + y_sprite)))
+                                {
+                                    isMatch = false;
+                                    break;
+                                }
+                            }
+
+                            if (!isMatch)
+                                break;
+                        }
+
+                        if (isMatch)
+                            return new Rectangle(x, y, gameObject.Bounds.Width, gameObject.Bounds.Height);
+                    }
+                }
+            }
+
+            return null;
         }
 
         private Point? FindFirstTile(Bitmap snapshot)

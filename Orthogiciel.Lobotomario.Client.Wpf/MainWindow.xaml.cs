@@ -10,10 +10,10 @@ namespace Orthogiciel.Lobotomario.Client.Wpf
 
         public MainWindow()
         {
-            InitializeComponent();
-
             DataContext = this;
             engine = new Engine();
+
+            InitializeComponent();
         }
 
         protected override void OnInitialized(EventArgs e)
