@@ -87,7 +87,7 @@ namespace Orthogiciel.Lobotomario.Core
                     // trouvé.
 
                     var newGameState = new List<GameObject>();
-                    var player = imageProcessor.FindPlayer(snapshot);
+                    var player = imageProcessor.FindPlayer(snapshot, gameState);
                     var tiles = imageProcessor.FindTiles(snapshot);
 
                     if (player != null)

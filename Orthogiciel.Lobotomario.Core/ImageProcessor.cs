@@ -1,6 +1,7 @@
 ﻿using Orthogiciel.Lobotomario.Core.GameObjects;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace Orthogiciel.Lobotomario.Core
 {
@@ -18,14 +19,19 @@ namespace Orthogiciel.Lobotomario.Core
         // de Mario dans les alentours. 
         // À améliorer : on pourrait garder en mémoire les zones déjà examinées pour ne pas repasser dessus.
         //-------------------------------------------------------------------------------------------------------------------------------------------------
-        public Mario FindPlayer(Bitmap snapshot)
+        public Mario FindPlayer(Bitmap snapshot, GameState gameState)
         {
+            var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
             var spritesheet = Mario.Spritesheet;
             var playerColor = Color.FromArgb(255, 177, 52, 37);
+            var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 8 >= 0 ? previousPlayerBounds.Value.X - 8 : 0;
+            var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 8 >= 0 ? previousPlayerBounds.Value.Y - 8 : 0;
+            var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 8 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 8 : snapshot.Width;
+            var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 8 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 8 : snapshot.Height;
 
-            for (var x = 0; x < snapshot.Width; x++)
+            for (var x = x_start; x < x_end; x++)
             {
-                for (var y = snapshot.Height - 1; y > 0; y--)
+                for (var y = y_end - 1; y > y_start; y--)
                 {
                     if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
                     {
