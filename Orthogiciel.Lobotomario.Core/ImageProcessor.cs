@@ -42,7 +42,7 @@ namespace Orthogiciel.Lobotomario.Core
 
                             if (bounds.HasValue)
                             {
-                                return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value };
+                                return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value, MarkColor = mario.MarkColor };
                             }
                         }
 
@@ -79,7 +79,7 @@ namespace Orthogiciel.Lobotomario.Core
 
                                 if (FindSprite(snapshot, tileset, tile, tilesetPosition, x, y))
                                 {
-                                    tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation });
+                                    tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
                                     break;
                                 }
                             }
