@@ -23,19 +23,19 @@ namespace Orthogiciel.Lobotomario.Core
                         new Point(80,35), new Point(97,34), new Point(114,34), new Point(131,34), new Point(148,34), new Point(165,34), new Point(182,34), new Point(199,34), new Point(216,34), new Point(233,34), new Point(250,34), new Point(267,34), new Point(284,34), new Point(301,34),
                         new Point(80,99), new Point(97,99), new Point(114,99), new Point(131,99), new Point(148,99), new Point(165,99), new Point(182,99), new Point(199,99), new Point(216,99), new Point(233,99), new Point(250,99), new Point(267,99), new Point(284,99), new Point(301,99)
                     },
-                    MarkColor = Color.Pink
+                    MarkColor = Color.PowderBlue
                 },
-                //new Mario()
-                //{
-                //    MarioForm = MarioForms.Super,
-                //    Bounds = new Rectangle(0, 0, 16, 32),
-                //    SpritesheetPositions = new List<Point>()
-                //    {
-                //        new Point(80,1), new Point(97,1), new Point(114,1), new Point(131,1), new Point(148,1), new Point(165,1), new Point(182,1), new Point(199,1), new Point(216,1), new Point(233,1), new Point(250,1), new Point(267,1), new Point(284,1), new Point(301,1),
-                //        new Point(80,66), new Point(97,66), new Point(114,66), new Point(131,66), new Point(148,66), new Point(165,66), new Point(182,66), new Point(199,66), new Point(216,66), new Point(233,66), new Point(250,66), new Point(267,66), new Point(284,66), new Point(301,66)
-                //    },
-                //    MarkColor = Color.LightSkyBlue
-                //}
+                new Mario()
+                {
+                    MarioForm = MarioForms.Super,
+                    Bounds = new Rectangle(0, 0, 16, 32),
+                    SpritesheetPositions = new List<Point>()
+                    {
+                        new Point(80,1), new Point(97,1), new Point(114,1), new Point(131,1), new Point(148,1), new Point(165,1), new Point(182,1), new Point(199,1), new Point(216,1), new Point(233,1), new Point(250,1), new Point(267,1), new Point(284,1), new Point(301,1),
+                        new Point(80,66), new Point(97,66), new Point(114,66), new Point(131,66), new Point(148,66), new Point(165,66), new Point(182,66), new Point(199,66), new Point(216,66), new Point(233,66), new Point(250,66), new Point(267,66), new Point(284,66), new Point(301,66)
+                    },
+                    MarkColor = Color.PowderBlue
+                }
             };
 
             Tiles = new List<Tile>()

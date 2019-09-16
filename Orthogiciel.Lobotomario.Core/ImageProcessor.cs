@@ -24,10 +24,10 @@ namespace Orthogiciel.Lobotomario.Core
             var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
             var spritesheet = Mario.Spritesheet;
             var playerColor = Color.FromArgb(255, 177, 52, 37);
-            var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 8 >= 0 ? previousPlayerBounds.Value.X - 8 : 0;
-            var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 8 >= 0 ? previousPlayerBounds.Value.Y - 8 : 0;
-            var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 8 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 8 : snapshot.Width;
-            var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 8 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 8 : snapshot.Height;
+            var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
+            var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
+            var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
+            var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
 
             for (var x = x_start; x < x_end; x++)
             {
@@ -54,25 +54,37 @@ namespace Orthogiciel.Lobotomario.Core
             return null;
         }
 
-        public List<Tile> FindTiles(Bitmap snapshot)
+        public List<Tile> FindTiles(Bitmap snapshot, GameState gameState, int? playerDeltaX)
         {
+            var firstTilePosition = (Point?)null;
             var tiles = new List<Tile>();
-            var firstTilePosition = FindFirstTile(snapshot);
+
+            if (playerDeltaX.HasValue && playerDeltaX.Value == 0)
+            {
+                var firstTile = gameState.Tiles.FirstOrDefault();
+
+                if (firstTile != null)
+                    firstTilePosition = new Point(firstTile.Bounds.X, firstTile.Bounds.Y);
+            }
+            else
+            {
+                firstTilePosition = FindFirstTile(snapshot);
+            }
 
             if (firstTilePosition != null)
             {
                 var tileset = Tile.Tileset;
                 var offsetX = firstTilePosition.Value.X % 16;
-                var offsetY = firstTilePosition.Value.Y % 16;
+                var offsetY = firstTilePosition.Value.Y % 16;                
 
-                for (var idx = 0; idx < gameObjectRepository.Tiles.Count; idx++)
+                for (var y = offsetY; y < snapshot.Height; y += 16)
                 {
-                    var tile = gameObjectRepository.Tiles[idx];
-
-                    for (var y = offsetY; y < snapshot.Height; y += tile.Bounds.Height)
+                    for (var x = offsetX; x < snapshot.Width; x += 16)
                     {
-                        for (var x = offsetX; x < snapshot.Width; x += tile.Bounds.Width)
+                        for (var idx = 0; idx < gameObjectRepository.Tiles.Count; idx++)
                         {
+                            var tile = gameObjectRepository.Tiles[idx];
+
                             for (var i = 0; i < tile.SpritesheetPositions.Count; i++)
                             {
                                 var tilesetPosition = tile.SpritesheetPositions[i];
@@ -80,6 +92,7 @@ namespace Orthogiciel.Lobotomario.Core
                                 if (FindSprite(snapshot, tileset, tile, tilesetPosition, x, y))
                                 {
                                     tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
+                                    idx = gameObjectRepository.Tiles.Count;
                                     break;
                                 }
                             }
