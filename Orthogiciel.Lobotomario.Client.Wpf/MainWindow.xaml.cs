@@ -45,13 +45,13 @@ namespace Orthogiciel.Lobotomario.Client.Wpf
             using (var g = Graphics.FromImage(gameStateView))
             {
                 // Dessin des tuiles
-                e.CurrentState.Where(o => o.GetType() == typeof(Tile)).ToList().ForEach(t =>
+                e.CurrentState.Where(o => o is Tile).ToList().ForEach(t =>
                 {
                     g.FillRectangle(new SolidBrush(t.MarkColor), t.Bounds);
                 });
 
                 // Dessin du joueur
-                var player = e.CurrentState.Where(o => o.GetType() == typeof(Mario)).FirstOrDefault();
+                var player = e.CurrentState.Where(o => o is Mario).FirstOrDefault();
 
                 if (player != null)
                 {
