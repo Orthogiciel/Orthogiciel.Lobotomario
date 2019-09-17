@@ -13,7 +13,7 @@ namespace Orthogiciel.Lobotomario.Tools.SnapshotViewer
             InitializeComponent();
 
             DataContext = this;
-            engine = new Engine();
+            engine = new SnapshotEngine();
         }
 
         protected override void OnInitialized(EventArgs e)

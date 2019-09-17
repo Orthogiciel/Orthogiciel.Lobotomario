@@ -13,12 +13,12 @@ namespace Orthogiciel.Lobotomario.Client.Wpf
 {
     public partial class MainWindow : Window
     {
-        private readonly Engine engine;
+        private readonly GameStateEngine engine;
 
         public MainWindow()
         {
             DataContext = this;
-            engine = new Engine();
+            engine = new GameStateEngine();
 
             InitializeComponent();
         }
