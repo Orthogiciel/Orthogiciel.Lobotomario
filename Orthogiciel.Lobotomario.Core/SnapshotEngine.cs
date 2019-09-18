@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Orthogiciel.Lobotomario.Core
 {
@@ -14,6 +11,18 @@ namespace Orthogiciel.Lobotomario.Core
 
         protected override void DoWork(object sender, DoWorkEventArgs e)
         {
+            while (isRunning)
+            {
+                try
+                {
+                    Updated?.Invoke(this, screen.TakeSnapshot());
+                    Thread.Sleep(100);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Engine processing error : {ex.Message}\r\n{ex.InnerException?.Message}");
+                }
+            }
             
         }
     }
