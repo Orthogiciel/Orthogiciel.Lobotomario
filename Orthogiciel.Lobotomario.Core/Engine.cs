@@ -19,6 +19,8 @@ namespace Orthogiciel.Lobotomario.Core
 
         protected readonly ImageProcessor imageProcessor;
 
+        protected readonly ObjectClassifier objectClassifier;
+
         protected readonly Input input;
 
         protected readonly GameState gameState;
@@ -33,7 +35,9 @@ namespace Orthogiciel.Lobotomario.Core
 
                 screen = new Screen(emulatorProcess);
                 gameObjectRepository = new GameObjectRepository();
+
                 imageProcessor = new ImageProcessor(gameObjectRepository);
+                objectClassifier = new ObjectClassifier(gameObjectRepository);
                 input = new Input();
                 gameState = new GameState();
                 

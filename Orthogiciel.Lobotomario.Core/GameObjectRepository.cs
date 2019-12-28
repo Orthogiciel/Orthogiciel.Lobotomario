@@ -49,7 +49,10 @@ namespace Orthogiciel.Lobotomario.Core
                         new Point(0,0), new Point(0,32), new Point(0,64), new Point(0,96),
                         new Point(0,16), new Point(0,48), new Point(0,80), new Point(0,112),
                         new Point(48,0), new Point(48,32), new Point(48,64), new Point(48,96),
-                        new Point(432,-1), new Point(432,31), new Point(432,63), new Point(432,95)
+                        new Point(432,0), //new Point(432,-1), 
+                        new Point(432,32), //new Point(432,31), 
+                        new Point(432,64), //new Point(432,63), 
+                        new Point(432,96) //new Point(432,95)
                     },
                     IsCollidable = true,
                     MarkColor = Color.Blue

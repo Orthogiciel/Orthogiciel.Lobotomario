@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Emgu.CV;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace Orthogiciel.Lobotomario.Core
@@ -8,6 +9,8 @@ namespace Orthogiciel.Lobotomario.Core
         public Rectangle Bounds { get; set; }
 
         public List<Point> SpritesheetPositions { get; set; }
+
+        public Matrix<float> HogDescriptors { get; set; }
 
         public Color MarkColor { get; set; }
     }
