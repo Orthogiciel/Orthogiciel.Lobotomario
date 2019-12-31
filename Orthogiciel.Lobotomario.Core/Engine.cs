@@ -36,8 +36,8 @@ namespace Orthogiciel.Lobotomario.Core
                 screen = new Screen(emulatorProcess);
                 gameObjectRepository = new GameObjectRepository();
 
-                imageProcessor = new ImageProcessor(gameObjectRepository);
                 objectClassifier = new ObjectClassifier(gameObjectRepository);
+                imageProcessor = new ImageProcessor(gameObjectRepository, objectClassifier);
                 input = new Input();
                 gameState = new GameState();
                 

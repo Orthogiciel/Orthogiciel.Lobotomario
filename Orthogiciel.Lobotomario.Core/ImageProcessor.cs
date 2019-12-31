@@ -1,4 +1,5 @@
 ﻿using Orthogiciel.Lobotomario.Core.GameObjects;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -8,10 +9,12 @@ namespace Orthogiciel.Lobotomario.Core
     public class ImageProcessor
     {
         private readonly GameObjectRepository gameObjectRepository;
+        private readonly ObjectClassifier objectClassifier;
 
-        public ImageProcessor(GameObjectRepository gameObjectRepository)
+        public ImageProcessor(GameObjectRepository gameObjectRepository, ObjectClassifier objectClassifier)
         {
             this.gameObjectRepository = gameObjectRepository;
+            this.objectClassifier = objectClassifier;
         }
 
         //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -21,40 +24,87 @@ namespace Orthogiciel.Lobotomario.Core
         //-------------------------------------------------------------------------------------------------------------------------------------------------
         public Mario FindPlayer(Bitmap snapshot, GameState gameState)
         {
-            var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
-            var spritesheet = Mario.Spritesheet;
-            var playerColor = Color.FromArgb(255, 177, 52, 37);
-            var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
-            var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
-            var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
-            var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
+            //var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
+            //var spritesheet = Mario.Spritesheet;
+            //var playerColor = Color.FromArgb(255, 177, 52, 37);
+            //var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
+            //var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
+            //var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
+            //var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
 
-            for (var x = x_start; x < x_end; x++)
-            {
-                for (var y = y_end - 1; y > y_start; y--)
-                {
-                    if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
-                    {
-                        // Vérifie si on peut trouver une occurence d'une des sprites de Mario
-                        foreach (Mario mario in gameObjectRepository.Marios)
-                        {
-                            var bounds = FindGameObjectInZone(snapshot, new Rectangle(x - 8, y - 31, 23, 62), mario, spritesheet);
+            //for (var x = x_start; x < x_end; x++)
+            //{
+            //    for (var y = y_end - 1; y > y_start; y--)
+            //    {
+            //        if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
+            //        {
+            //            // Vérifie si on peut trouver une occurence d'une des sprites de Mario
+            //            foreach (Mario mario in gameObjectRepository.Marios)
+            //            {
+            //                var bounds = FindGameObjectInZone(snapshot, new Rectangle(x - 8, y - 31, 23, 62), mario, spritesheet);
 
-                            if (bounds.HasValue)
-                            {
-                                return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value, MarkColor = mario.MarkColor };
-                            }
-                        }
+            //                if (bounds.HasValue)
+            //                {
+            //                    return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value, MarkColor = mario.MarkColor };
+            //                }
+            //            }
 
-                        y -= 31;
-                    }
-                }
-            }
+            //            y -= 31;
+            //        }
+            //    }
+            //}
 
             return null;
         }
 
         public List<Tile> FindTiles(Bitmap snapshot, GameState gameState, int? playerDeltaX)
+        {
+            var firstTilePosition = (Point?)null;
+            var tiles = new List<Tile>();
+
+            if (playerDeltaX.HasValue && playerDeltaX.Value == 0)
+            {
+                var firstTile = gameState.Tiles.FirstOrDefault();
+
+                if (firstTile != null)
+                    firstTilePosition = new Point(firstTile.Bounds.X, firstTile.Bounds.Y);
+            }
+            else
+            {
+                firstTilePosition = FindFirstTile(snapshot);
+            }
+
+            if (firstTilePosition != null)
+            {
+                var tileset = Tile.Tileset;
+                var offsetX = firstTilePosition.Value.X % 16;
+                var offsetY = firstTilePosition.Value.Y % 16;
+
+                for (var y = offsetY; y + 15 < snapshot.Height; y += 16)
+                {
+                    for (var x = offsetX; x + 15 < snapshot.Width; x += 16)
+                    {
+                        var imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
+                        var classIndex = this.objectClassifier.ClassifyImage(imgSection);
+
+                        try
+                        {
+                            var tileType = (TileTypes)classIndex;
+                            var tile = gameObjectRepository.Tiles.SingleOrDefault(t => t.TileType == tileType);
+                            tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+                }
+            }
+
+            return tiles;
+        }
+
+        public List<Tile> FindTilesOld(Bitmap snapshot, GameState gameState, int? playerDeltaX)
         {
             var firstTilePosition = (Point?)null;
             var tiles = new List<Tile>();
@@ -234,6 +284,30 @@ namespace Orthogiciel.Lobotomario.Core
         }
 
         private Point? FindFirstTile(Bitmap snapshot)
+        {
+            for (var y = snapshot.Height - 16 - 1; y > 0; y--)
+            {
+                for (var x = 0; x < snapshot.Width; x++)
+                {
+                    var imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
+                    var classIndex = this.objectClassifier.ClassifyImage(imgSection);
+
+                    try
+                    {
+                        var tileType = (TileTypes)classIndex;
+                        return new Point(x, y);                         
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private Point? FindFirstTileOld(Bitmap snapshot)
         {
             var tileset = Tile.Tileset;
 

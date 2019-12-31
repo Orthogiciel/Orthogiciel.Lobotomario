@@ -32,6 +32,20 @@ namespace Orthogiciel.Lobotomario.Core
             TrainObjectClassifier();
         }
 
+        public float ClassifyImage(Bitmap snapshot)
+        {
+            var hogMatrix = new Matrix<float>(1, (int)this.hogDescriptor.DescriptorSize);
+            var img = new Image<Bgr, Byte>(snapshot).GetSubRect(new Rectangle(new Point(0,0), new Size(16, 16)));
+            var hog = hogDescriptor.Compute(img);
+
+            for (var i = 0; i < hogMatrix.Cols; i++)
+            {
+                hogMatrix[0,i] = hog[i];
+            }
+
+            return svm.Predict(hogMatrix);
+        }
+
         private void ComputeImagesHOGDescriptors()
         {
             gameObjectRepository.Tiles.ForEach(t =>
@@ -54,8 +68,8 @@ namespace Orthogiciel.Lobotomario.Core
         }
 
         private void TrainObjectClassifier()
-        {            
-            var trainData = new Matrix<float>(0,0);
+        {
+            var trainData = new Matrix<float>(0, 0);
             var trainClasses = new Matrix<int>(0, 0);
 
             gameObjectRepository.Tiles.ForEach(t =>
@@ -77,25 +91,28 @@ namespace Orthogiciel.Lobotomario.Core
             });
 
             svm.Train(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainClasses);
+        }
 
-            //gameObjectRepository.Tiles.ForEach(t =>
-            //{
-            //    Console.WriteLine($"Testing Tile {t.TileType}...");
+        private void TestTileRecognition()
+        {
+            gameObjectRepository.Tiles.ForEach(t =>
+            {
+                Console.WriteLine($"Testing Tile {t.TileType}...");
 
-            //    for (var i = 0; i < t.HogDescriptors.Rows; i++)
-            //    {
-            //        Console.WriteLine($"Form {i}... Detected type : ");
+                for (var i = 0; i < t.HogDescriptors.Rows; i++)
+                {
+                    Console.WriteLine($"Form {i}... Detected type : ");
 
-            //        var res = svm.Predict(t.HogDescriptors.GetRow(i));
+                    var res = svm.Predict(t.HogDescriptors.GetRow(i));
 
-            //        if (res == 0)
-            //            Console.Write((TileTypes)0 + "\n");
-            //        else if (res == 1)
-            //            Console.Write((TileTypes)1 + "\n");
-            //        else
-            //            Console.Write("Unknown\n");
-            //    }
-            //});
+                    if (res == 0)
+                        Console.Write((TileTypes)0 + "\n");
+                    else if (res == 1)
+                        Console.Write((TileTypes)1 + "\n");
+                    else
+                        Console.Write("Unknown\n");
+                }
+            });
         }
     }
 }
