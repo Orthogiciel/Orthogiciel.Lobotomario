@@ -58,6 +58,7 @@
     <Compile Include="Engine.cs" />
     <Compile Include="GameObject.cs" />
     <Compile Include="GameObjectRepository.cs" />
+    <Compile Include="GameObjects\ObjectClasses.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="GameStateEngine.cs" />
     <Compile Include="ImageProcessor.cs" />

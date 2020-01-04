@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Emgu.CV.ML;
+using Orthogiciel.Lobotomario.Core.GameObjects;
 
 namespace Orthogiciel.Lobotomario.Core
 {
@@ -72,6 +73,49 @@ namespace Orthogiciel.Lobotomario.Core
             var trainData = new Matrix<float>(0, 0);
             var trainClasses = new Matrix<int>(0, 0);
 
+            // Add background tiles to training data
+            for (var i = 0; i + 16 < this.tileset.Width; i += 16)
+            {
+                for (var j = 0; j + 16 < this.tileset.Height; j += 16)
+                {
+                    var position = new Point(i, j);
+
+                    if (!gameObjectRepository.Tiles.Any(t => t.SpritesheetPositions.Any(p => p == position)))
+                    {
+                        var img = this.tileset.GetSubRect(new Rectangle(position, new Size(16, 16)));
+                        var hog = hogDescriptor.Compute(img);
+
+                        if (trainData.Rows == 0)
+                        {
+                            trainData = new Matrix<float>(1, hog.Length);
+
+                            for (var k = 0; k < hog.Length; k++)
+                            {
+                                trainData[0, k] = hog[k];
+                            }
+
+                            trainClasses = new Matrix<int>(1, 1);
+                            trainClasses.SetValue(ObjectClasses.Background);
+                        }
+                        else
+                        {
+                            var newTrainClass = new Matrix<int>(1, 1);
+                            newTrainClass.SetValue(ObjectClasses.Background);
+
+                            var newHogMatrix = new Matrix<float>(1, hog.Length);
+                            for (var k = 0; k < hog.Length; k++)
+                            {
+                                newHogMatrix[0, k] = hog[k];
+                            }
+
+                            trainData = trainData.ConcateVertical(newHogMatrix);
+                            trainClasses = trainClasses.ConcateVertical(newTrainClass);
+                        }
+                    }
+                }
+            }
+
+            // Add significative tiles to training data
             gameObjectRepository.Tiles.ForEach(t =>
             {
                 if (trainData.Rows == 0)
