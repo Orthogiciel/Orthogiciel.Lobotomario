@@ -85,17 +85,13 @@ namespace Orthogiciel.Lobotomario.Core
                     for (var x = offsetX; x + 15 < snapshot.Width; x += 16)
                     {
                         var imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
-                        var classIndex = this.objectClassifier.ClassifyImage(imgSection);
+                        var classIndex = (int)this.objectClassifier.ClassifyImage(imgSection);
 
-                        try
+                        if (classIndex == ObjectClasses.BreakableBlock || classIndex == ObjectClasses.UnbreakableBlock)
                         {
                             var tileType = (TileTypes)classIndex;
                             var tile = gameObjectRepository.Tiles.SingleOrDefault(t => t.TileType == tileType);
                             tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
                         }
                     }
                 }
@@ -290,16 +286,12 @@ namespace Orthogiciel.Lobotomario.Core
                 for (var x = 0; x < snapshot.Width; x++)
                 {
                     var imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
-                    var classIndex = this.objectClassifier.ClassifyImage(imgSection);
+                    var classIndex = (int)this.objectClassifier.ClassifyImage(imgSection);
 
-                    try
+                    if (classIndex == ObjectClasses.BreakableBlock || classIndex == ObjectClasses.UnbreakableBlock)
                     {
                         var tileType = (TileTypes)classIndex;
-                        return new Point(x, y);                         
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
+                        return new Point(x, y);
                     }
                 }
             }
