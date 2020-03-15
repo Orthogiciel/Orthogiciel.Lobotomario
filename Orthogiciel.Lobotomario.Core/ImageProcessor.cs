@@ -1,8 +1,10 @@
 ﻿using Orthogiciel.Lobotomario.Core.GameObjects;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Orthogiciel.Lobotomario.Core
 {
@@ -10,6 +12,7 @@ namespace Orthogiciel.Lobotomario.Core
     {
         private readonly GameObjectRepository gameObjectRepository;
         private readonly ObjectClassifier objectClassifier;
+        private static readonly object snapshotLock = new object();
 
         public ImageProcessor(GameObjectRepository gameObjectRepository, ObjectClassifier objectClassifier)
         {
@@ -24,43 +27,51 @@ namespace Orthogiciel.Lobotomario.Core
         //-------------------------------------------------------------------------------------------------------------------------------------------------
         public Mario FindPlayer(Bitmap snapshot, GameState gameState)
         {
-            //var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
-            //var spritesheet = Mario.Spritesheet;
-            //var playerColor = Color.FromArgb(255, 177, 52, 37);
-            //var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
-            //var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
-            //var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
-            //var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
+            var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
+            var spritesheet = Mario.Spritesheet;
+            var playerColor = Color.FromArgb(255, 177, 52, 37);
+            var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
+            var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
+            var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
+            var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
 
-            //for (var x = x_start; x < x_end; x++)
-            //{
-            //    for (var y = y_end - 1; y > y_start; y--)
-            //    {
-            //        if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
-            //        {
-            //            // Vérifie si on peut trouver une occurence d'une des sprites de Mario
-            //            foreach (Mario mario in gameObjectRepository.Marios)
-            //            {
-            //                var bounds = FindGameObjectInZone(snapshot, new Rectangle(x - 8, y - 31, 23, 62), mario, spritesheet);
+            for (var x = x_start; x < x_end && x < snapshot.Width; x++)
+            {
+                for (var y = y_end - 1; y > y_start && y > 0; y--)
+                {
+                    // TODO : 
+                    // au lieu de faire la recherche autour de chaque point rouge qu'on trouve, 
+                    // essayer de déduire des zones de recherche à partir de la liste de points candidats
 
-            //                if (bounds.HasValue)
-            //                {
-            //                    return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value, MarkColor = mario.MarkColor };
-            //                }
-            //            }
+                    if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
+                    {
+                        // Vérifie si on peut trouver une occurence d'une des sprites de Mario
+                        foreach (Mario mario in gameObjectRepository.Marios)
+                        {
+                            var bounds = FindGameObjectInZone(snapshot, new Rectangle(x - 8, y - 31, 23, 62), mario, spritesheet);
 
-            //            y -= 31;
-            //        }
-            //    }
-            //}
+                            if (bounds.HasValue)
+                            {
+                                return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value, MarkColor = mario.MarkColor };
+                            }
+                        }
+
+                        y -= 31;
+                        x += 15;
+                    }
+                }
+            }
 
             return null;
         }
 
-        public List<Tile> FindTiles(Bitmap snapshot, GameState gameState, int? playerDeltaX)
+        public async Task<IEnumerable<Tile>> FindTiles(Bitmap snapshot, GameState gameState, int? playerDeltaX)
         {
+            // TODO :
+            // utiliser l'état précédent du GameState pour réduire les zones à analyser (par exemple : pas besoin de retraiter les blocs indestructibles)
+
             var firstTilePosition = (Point?)null;
-            var tiles = new List<Tile>();
+            var tiles = new ConcurrentBag<Tile>();
 
             if (playerDeltaX.HasValue && playerDeltaX.Value == 0)
             {
@@ -76,78 +87,52 @@ namespace Orthogiciel.Lobotomario.Core
 
             if (firstTilePosition != null)
             {
+                var tasks = new List<Task>();
+
                 var tileset = Tile.Tileset;
+                var snapshotHeight = snapshot.Height;
+                var snapshotWidth = snapshot.Width;
                 var offsetX = firstTilePosition.Value.X % 16;
                 var offsetY = firstTilePosition.Value.Y % 16;
 
-                for (var y = offsetY; y + 15 < snapshot.Height; y += 16)
+                for (var y = offsetY; y + 15 < snapshotHeight; y = y + 16)
                 {
-                    for (var x = offsetX; x + 15 < snapshot.Width; x += 16)
+                    for (var x = offsetX; x + 15 < snapshotWidth; x = x + 16)
                     {
-                        var imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
-                        var classIndex = (int)this.objectClassifier.ClassifyImage(imgSection);
-
-                        if (classIndex == ObjectClasses.BreakableBlock || classIndex == ObjectClasses.UnbreakableBlock)
-                        {
-                            var tileType = (TileTypes)classIndex;
-                            var tile = gameObjectRepository.Tiles.SingleOrDefault(t => t.TileType == tileType);
-                            tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
-                        }
+                        var localX = x;
+                        var localY = y;
+                        tasks.Add(new Task(() => SearchAreaForTiles(snapshot, tiles, localX, localY)));
                     }
                 }
+
+                foreach (Task t in tasks)
+                {
+                    t.Start();
+                }
+
+                await Task.WhenAll(tasks.ToArray());
             }
 
-            return tiles;
+            return tiles.ToList();
         }
 
-        public List<Tile> FindTilesOld(Bitmap snapshot, GameState gameState, int? playerDeltaX)
+        private void SearchAreaForTiles(Bitmap snapshot, ConcurrentBag<Tile> tiles, int x, int y)
         {
-            var firstTilePosition = (Point?)null;
-            var tiles = new List<Tile>();
+            Bitmap imgSection;
 
-            if (playerDeltaX.HasValue && playerDeltaX.Value == 0)
+            lock (snapshotLock)
             {
-                var firstTile = gameState.Tiles.FirstOrDefault();
-
-                if (firstTile != null)
-                    firstTilePosition = new Point(firstTile.Bounds.X, firstTile.Bounds.Y);
-            }
-            else
-            {
-                firstTilePosition = FindFirstTile(snapshot);
+                imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
             }
 
-            if (firstTilePosition != null)
+            var classIndex = (int)this.objectClassifier.ClassifyImage(imgSection);
+
+            if (classIndex == ObjectClasses.BreakableBlock || classIndex == ObjectClasses.UnbreakableBlock)
             {
-                var tileset = Tile.Tileset;
-                var offsetX = firstTilePosition.Value.X % 16;
-                var offsetY = firstTilePosition.Value.Y % 16;                
-
-                for (var y = offsetY; y < snapshot.Height; y += 16)
-                {
-                    for (var x = offsetX; x < snapshot.Width; x += 16)
-                    {
-                        for (var idx = 0; idx < gameObjectRepository.Tiles.Count; idx++)
-                        {
-                            var tile = gameObjectRepository.Tiles[idx];
-
-                            for (var i = 0; i < tile.SpritesheetPositions.Count; i++)
-                            {
-                                var tilesetPosition = tile.SpritesheetPositions[i];
-
-                                if (FindSprite(snapshot, tileset, tile, tilesetPosition, x, y))
-                                {
-                                    tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
-                                    idx = gameObjectRepository.Tiles.Count;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+                var tileType = (TileTypes)classIndex;
+                var tile = gameObjectRepository.Tiles.SingleOrDefault(t => t.TileType == tileType);
+                tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
             }
-
-            return tiles;
         }
 
         public void MarkPlayer(Bitmap snapshot)
@@ -283,7 +268,7 @@ namespace Orthogiciel.Lobotomario.Core
         {
             for (var y = snapshot.Height - 16 - 1; y > 0; y--)
             {
-                for (var x = 0; x < snapshot.Width; x++)
+                for (var x = 0; x < snapshot.Width - 16 - 1; x++)
                 {
                     var imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
                     var classIndex = (int)this.objectClassifier.ClassifyImage(imgSection);
@@ -292,34 +277,6 @@ namespace Orthogiciel.Lobotomario.Core
                     {
                         var tileType = (TileTypes)classIndex;
                         return new Point(x, y);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private Point? FindFirstTileOld(Bitmap snapshot)
-        {
-            var tileset = Tile.Tileset;
-
-            for (var idx = 0; idx < gameObjectRepository.Tiles.Count; idx++)
-            {
-                var tile = gameObjectRepository.Tiles[idx];
-
-                for (var y = snapshot.Height - tile.Bounds.Height - 1; y > 0; y--)
-                {
-                    for (var x = 0; x < snapshot.Width; x++)
-                    {
-                        for (var i = 0; i < tile.SpritesheetPositions.Count; i++)
-                        {
-                            var tilesetPosition = tile.SpritesheetPositions[i];
-
-                            if (FindSprite(snapshot, tileset, tile, tilesetPosition, x, y))
-                            {
-                                return new Point(x, y);
-                            }
-                        }
                     }
                 }
             }
