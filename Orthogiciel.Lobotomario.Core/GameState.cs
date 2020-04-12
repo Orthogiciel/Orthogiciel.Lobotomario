@@ -10,6 +10,8 @@ namespace Orthogiciel.Lobotomario.Core
 {
     public class GameState
     {
+        public Point? FirstTilePosition { get; set; }
+
         public List<GameObject> CurrentState { get; set; }
 
         public List<GameObject> PreviousState { get; set; }

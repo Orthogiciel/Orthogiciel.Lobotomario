@@ -8,10 +8,12 @@ namespace Orthogiciel.Lobotomario.Core.GameObjects
 {
     public static class ObjectClasses
     {
-        public static int Background = -1;
-        public static int UnbreakableBlock = 0;
-        public static int BreakableBlock = 1;
-        public static int Mario = 2;
-        public static int SuperMario = 3;
+        public const int Background = -1;
+        public const int UnbreakableBlock = 0;
+        public const int BreakableBlock = 1;
+        public const int Mario = 2;
+        public const int SuperMario = 3;
+        public const int FieryMario = 4;
+        public const int InvincibleMario = 5;
     }
 }

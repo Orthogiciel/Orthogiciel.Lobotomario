@@ -6,11 +6,6 @@ namespace Orthogiciel.Lobotomario.Core.GameObjects
     {
         public TileTypes TileType { get; set; }
 
-        public static Bitmap Tileset
-        {
-            get { return Properties.Resources.Tileset; }
-        }
-
         public bool IsCollidable { get; set; }
 
         public bool IsBreakable { get; set; }

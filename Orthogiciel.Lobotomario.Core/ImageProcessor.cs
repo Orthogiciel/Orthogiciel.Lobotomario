@@ -12,6 +12,8 @@ namespace Orthogiciel.Lobotomario.Core
     {
         private readonly GameObjectRepository gameObjectRepository;
         private readonly ObjectClassifier objectClassifier;
+        private readonly Bitmap tileSpritesheet = Properties.Resources.Tileset;
+        private readonly Bitmap playerSpritesheet = Properties.Resources.Player;
         private static readonly object snapshotLock = new object();
 
         public ImageProcessor(GameObjectRepository gameObjectRepository, ObjectClassifier objectClassifier)
@@ -27,37 +29,45 @@ namespace Orthogiciel.Lobotomario.Core
         //-------------------------------------------------------------------------------------------------------------------------------------------------
         public Mario FindPlayer(Bitmap snapshot, GameState gameState)
         {
+            var candidatePixels = new List<Point>();
             var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
-            var spritesheet = Mario.Spritesheet;
             var playerColor = Color.FromArgb(255, 177, 52, 37);
             var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
             var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
             var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
             var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
 
+
+            // Recherche les pixels rouges distincts dans l'image qui sont distants de plus de 16 pixels en x ou en y 
+            // (on ne veut pas analyser inutilement le même groupe de pixels plusieurs fois).            
             for (var x = x_start; x < x_end && x < snapshot.Width; x++)
             {
-                for (var y = y_end - 1; y > y_start && y > 0; y--)
+                for (var y = y_end - 1; y > y_start; y--)
                 {
-                    // TODO : 
-                    // au lieu de faire la recherche autour de chaque point rouge qu'on trouve, 
-                    // essayer de déduire des zones de recherche à partir de la liste de points candidats
-
                     if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
                     {
-                        // Vérifie si on peut trouver une occurence d'une des sprites de Mario
-                        foreach (Mario mario in gameObjectRepository.Marios)
+                        if (!candidatePixels.Any(p => x - p.X < 16 || y - p.Y < 16))
+                            candidatePixels.Add(new Point(x, y));
+                    }
+                }
+            }
+
+            // Tente de détecter une frame de Mario autour des pixels candidats trouvés
+            foreach (Point point in candidatePixels)
+            {
+                for (int x = (point.X - 8 >= 0 ? point.X - 8 : 0); x < (point.X + 24 < snapshot.Width ? point.X + 24 : snapshot.Width - 1); x++)
+                {
+                    for (int y = (point.Y - 8 >= 0 ? point.Y - 8 : 0); y < (point.Y + 24 < snapshot.Height ? point.Y + 24 : snapshot.Height - 1); y++)
+                    {
+                        var classIndex = SearchAreaForMario(snapshot, x, y);
+
+                        if (classIndex.HasValue)
                         {
-                            var bounds = FindGameObjectInZone(snapshot, new Rectangle(x - 8, y - 31, 23, 62), mario, spritesheet);
+                            var mario = objectClassifier.GetMario(classIndex.Value);
+                            var bounds = new Rectangle(x, y, mario.Bounds.Width, mario.Bounds.Height);
 
-                            if (bounds.HasValue)
-                            {
-                                return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds.Value, MarkColor = mario.MarkColor };
-                            }
+                            return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds, MarkColor = mario.MarkColor };
                         }
-
-                        y -= 31;
-                        x += 15;
                     }
                 }
             }
@@ -89,7 +99,6 @@ namespace Orthogiciel.Lobotomario.Core
             {
                 var tasks = new List<Task>();
 
-                var tileset = Tile.Tileset;
                 var snapshotHeight = snapshot.Height;
                 var snapshotWidth = snapshot.Width;
                 var offsetX = firstTilePosition.Value.X % 16;
@@ -101,6 +110,7 @@ namespace Orthogiciel.Lobotomario.Core
                     {
                         var localX = x;
                         var localY = y;
+
                         tasks.Add(new Task(() => SearchAreaForTiles(snapshot, tiles, localX, localY)));
                     }
                 }
@@ -113,15 +123,20 @@ namespace Orthogiciel.Lobotomario.Core
                 await Task.WhenAll(tasks.ToArray());
             }
 
+            gameState.FirstTilePosition = firstTilePosition;
+
             return tiles.ToList();
         }
 
         private void SearchAreaForTiles(Bitmap snapshot, ConcurrentBag<Tile> tiles, int x, int y)
         {
-            Bitmap imgSection;
+            Bitmap imgSection;            
 
             lock (snapshotLock)
             {
+                if (x + 16 >= snapshot.Width || y + 16 >= snapshot.Height)
+                    return;
+
                 imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
             }
 
@@ -133,6 +148,27 @@ namespace Orthogiciel.Lobotomario.Core
                 var tile = gameObjectRepository.Tiles.SingleOrDefault(t => t.TileType == tileType);
                 tiles.Add(new Tile() { Bounds = new Rectangle(x, y, tile.Bounds.Width - 1, tile.Bounds.Height - 1), IsBreakable = tile.IsBreakable, IsCollidable = tile.IsCollidable, IsTuyo = tile.IsTuyo, Orientation = tile.Orientation, MarkColor = tile.MarkColor });
             }
+        }
+
+        private int? SearchAreaForMario(Bitmap snapshot, int x, int y)
+        {
+            Bitmap imgSection;
+
+            lock (snapshotLock)
+            {
+                if (x + 16 >= snapshot.Width || y + 16 >= snapshot.Height)
+                    return null;
+
+                imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
+            }
+
+            var classIndex = (int)this.objectClassifier.ClassifyImage(imgSection);
+
+            if (classIndex == ObjectClasses.Mario || classIndex == ObjectClasses.SuperMario || classIndex == ObjectClasses.FieryMario || 
+                classIndex == ObjectClasses.InvincibleMario)
+                return classIndex;
+
+            return null;
         }
 
         public void MarkPlayer(Bitmap snapshot)
@@ -166,7 +202,6 @@ namespace Orthogiciel.Lobotomario.Core
                 if (drawGrid)
                     DrawGrid(snapshot, firstTilePosition.Value);
 
-                var tileset = Tile.Tileset;                
                 var offsetX = firstTilePosition.Value.X % 16;
                 var offsetY = firstTilePosition.Value.Y % 16;                
 
@@ -183,7 +218,7 @@ namespace Orthogiciel.Lobotomario.Core
                             {
                                 var tilesetPosition = tile.SpritesheetPositions[i];
 
-                                if (FindSprite(snapshot, tileset, tile, tilesetPosition, x, y))
+                                if (FindSprite(snapshot, tileSpritesheet, tile, tilesetPosition, x, y))
                                 {
                                     using (var g = Graphics.FromImage(snapshot))
                                     {

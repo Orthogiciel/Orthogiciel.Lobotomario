@@ -15,6 +15,7 @@ namespace Orthogiciel.Lobotomario.Core
     {
         private readonly GameObjectRepository gameObjectRepository;
         private Image<Bgr, Byte> tileset;
+        private Image<Bgr, Byte> playerSet;
         private HOGDescriptor hogDescriptor;
         private SVM svm;
 
@@ -22,6 +23,7 @@ namespace Orthogiciel.Lobotomario.Core
         {
             this.gameObjectRepository = gameObjectRepository;
             this.tileset = new Image<Bgr, Byte>(Properties.Resources.Tileset);
+            this.playerSet = new Image<Bgr, byte>(Properties.Resources.Player);
             this.hogDescriptor = new HOGDescriptor(new Size(16, 16), new Size(8, 8), new Size(4, 4), new Size(8, 8));
             this.svm = new SVM();
             svm.SetKernel(SVM.SvmKernelType.Rbf);
@@ -47,9 +49,27 @@ namespace Orthogiciel.Lobotomario.Core
             return svm.Predict(hogMatrix);
         }
 
+        public Mario GetMario(int objectClass)
+        {
+            switch (objectClass)
+            {
+                case ObjectClasses.Mario:
+                    return gameObjectRepository.Marios.FirstOrDefault(m => m.MarioForm == MarioForms.Mini);
+                case ObjectClasses.SuperMario:
+                    return gameObjectRepository.Marios.FirstOrDefault(m => m.MarioForm == MarioForms.Super);
+                case ObjectClasses.FieryMario:
+                    return gameObjectRepository.Marios.FirstOrDefault(m => m.MarioForm == MarioForms.Fiery);
+                case ObjectClasses.InvincibleMario:
+                    return gameObjectRepository.Marios.FirstOrDefault(m => m.MarioForm == MarioForms.Invincible);
+                default:
+                    throw new InvalidOperationException("Aucun type de Mario ne correspond à cette classe d'objet !");
+            }
+        }
+
         private void ComputeImagesHOGDescriptors()
         {
-            gameObjectRepository.Tiles.ForEach(t =>
+            // ComputeHogDescriptors for Tiles
+            foreach (Tile t in gameObjectRepository.Tiles)
             {
                 t.HogDescriptors = new Matrix<float>(t.SpritesheetPositions.Count, (int)this.hogDescriptor.DescriptorSize);
 
@@ -65,7 +85,36 @@ namespace Orthogiciel.Lobotomario.Core
                         t.HogDescriptors[i, j] = hog[j];
                     }
                 }
-            });
+            };
+
+            // ComputeHogDescriptors for Marios
+            foreach (Mario m in gameObjectRepository.Marios)
+            {
+                m.HogDescriptors = new Matrix<float>(m.SpritesheetPositions.Count, (int)this.hogDescriptor.DescriptorSize);
+
+                for (var i = 0; i < m.SpritesheetPositions.Count; i++)
+                {
+                    ComputeHogDescriptorForMarioSpritesheetPosition(m, i, 0);
+
+                    if (m.Bounds.Height == 32)
+                    {
+                        ComputeHogDescriptorForMarioSpritesheetPosition(m, i, 32);
+                    }
+                }
+            };
+        }
+
+        private void ComputeHogDescriptorForMarioSpritesheetPosition(Mario mario, int i, int y_offset)
+        {
+            Console.WriteLine($"Computing Image HOG Descriptors - Mario {mario.MarioForm} - Position ({mario.SpritesheetPositions[i].X},{mario.SpritesheetPositions[i].Y + y_offset})");
+
+            var img = this.playerSet.GetSubRect(new Rectangle(mario.SpritesheetPositions[i], new Size(16, 16)));
+            var hog = hogDescriptor.Compute(img);
+
+            for (var j = 0; j < hog.Length; j++)
+            {
+                mario.HogDescriptors[i, j] = hog[j];
+            }
         }
 
         private void TrainObjectClassifier()
@@ -134,7 +183,43 @@ namespace Orthogiciel.Lobotomario.Core
                 }
             });
 
+            // Add Marios to training data
+            foreach (Mario m in gameObjectRepository.Marios)
+            {
+                if (trainData.Rows == 0)
+                {
+                    trainData = m.HogDescriptors;
+                    trainClasses = new Matrix<int>(m.HogDescriptors.Rows, 1);
+                    trainClasses.SetValue(GetMarioClass(m));
+                }
+                else
+                {
+                    var newTrainClass = new Matrix<int>(m.HogDescriptors.Rows, 1);
+                    newTrainClass.SetValue(GetMarioClass(m));
+
+                    trainData = trainData.ConcateVertical(m.HogDescriptors);
+                    trainClasses = trainClasses.ConcateVertical(newTrainClass);
+                }
+            }           
+
             svm.Train(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainClasses);
+        }
+
+        private int GetMarioClass(Mario mario)
+        {
+            switch (mario.MarioForm)
+            {
+                case MarioForms.Mini:
+                    return ObjectClasses.Mario;
+                case MarioForms.Super:
+                    return ObjectClasses.Mario;
+                case MarioForms.Fiery:
+                    return ObjectClasses.Mario;
+                case MarioForms.Invincible:
+                    return ObjectClasses.Mario;
+                default:
+                    throw new InvalidOperationException("Aucune classe d'objet n'est configurée pour ce type de Mario !");
+            }
         }
 
         private void TestTileRecognition()
