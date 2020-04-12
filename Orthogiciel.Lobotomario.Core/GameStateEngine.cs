@@ -21,7 +21,7 @@ namespace Orthogiciel.Lobotomario.Core
                     // trouvé.
 
                     var newGameState = new List<GameObject>();
-                    var player = imageProcessor.FindPlayer(snapshot, gameState);
+                    var player = await imageProcessor.FindPlayer(snapshot, gameState);
                     var playerDeltaX = (player == null || gameState.Player == null) ? null : (int?)(player.Bounds.X - gameState.Player.Bounds.X);
                     var tiles = (playerDeltaX.HasValue && playerDeltaX.Value == 0) ? gameState.Tiles : await imageProcessor.FindTiles(snapshot, gameState, playerDeltaX);
 

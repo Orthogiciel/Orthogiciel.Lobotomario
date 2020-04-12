@@ -23,56 +23,61 @@ namespace Orthogiciel.Lobotomario.Core
         }
 
         //-------------------------------------------------------------------------------------------------------------------------------------------------
-        // Recherche d'un pixel nous indiquant que Mario est peut-être à l'intérieur d'une région autour de point, puis recherche précise d'une sprite
-        // de Mario dans les alentours. 
-        // À améliorer : on pourrait garder en mémoire les zones déjà examinées pour ne pas repasser dessus.
+        // Recherche d'un pixel nous indiquant que Mario est peut-être à l'intérieur d'une région autour d'un point, puis recherche précise d'une sprite
+        // de Mario dans les alentours.
         //-------------------------------------------------------------------------------------------------------------------------------------------------
-        public Mario FindPlayer(Bitmap snapshot, GameState gameState)
+        public async Task<Mario> FindPlayer(Bitmap snapshot, GameState gameState)
         {
-            var candidatePixels = new List<Point>();
-            var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
-            var playerColor = Color.FromArgb(255, 177, 52, 37);
-            var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
-            var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
-            var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
-            var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
-
-
-            // Recherche les pixels rouges distincts dans l'image qui sont distants de plus de 16 pixels en x ou en y 
-            // (on ne veut pas analyser inutilement le même groupe de pixels plusieurs fois).            
-            for (var x = x_start; x < x_end && x < snapshot.Width; x++)
+            return await Task.Run(() =>
             {
-                for (var y = y_end - 1; y > y_start; y--)
-                {
-                    if (PixelsMatch(playerColor, snapshot.GetPixel(x, y)))
-                    {
-                        if (!candidatePixels.Any(p => x - p.X < 16 || y - p.Y < 16))
-                            candidatePixels.Add(new Point(x, y));
-                    }
-                }
-            }
+                var candidatePixels = new List<Point>();
+                var previousPlayerBounds = gameState.CurrentState.FirstOrDefault(go => go.GetType() == typeof(Mario))?.Bounds;
+                var playerColor = Color.FromArgb(255, 177, 52, 37);
+                var x_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X - 32 >= 0 ? previousPlayerBounds.Value.X - 32 : 0;
+                var y_start = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y - 32 >= 0 ? previousPlayerBounds.Value.Y - 32 : 0;
+                var x_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 < snapshot.Width ? previousPlayerBounds.Value.X + previousPlayerBounds.Value.Width + 32 : snapshot.Width;
+                var y_end = previousPlayerBounds.HasValue && previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 < snapshot.Height ? previousPlayerBounds.Value.Y + previousPlayerBounds.Value.Height + 32 : snapshot.Height;
 
-            // Tente de détecter une frame de Mario autour des pixels candidats trouvés
-            foreach (Point point in candidatePixels)
-            {
-                for (int x = (point.X - 8 >= 0 ? point.X - 8 : 0); x < (point.X + 24 < snapshot.Width ? point.X + 24 : snapshot.Width - 1); x++)
+                // Recherche les pixels rouges distincts dans l'image qui sont distants de plus de 16 pixels en x ou en y 
+                // (on ne veut pas analyser inutilement le même groupe de pixels plusieurs fois).            
+                for (var x = x_start; x < x_end && x < snapshot.Width; x++)
                 {
-                    for (int y = (point.Y - 8 >= 0 ? point.Y - 8 : 0); y < (point.Y + 24 < snapshot.Height ? point.Y + 24 : snapshot.Height - 1); y++)
+                    for (var y = y_end - 1; y > y_start; y--)
                     {
-                        var classIndex = SearchAreaForMario(snapshot, x, y);
+                        var localX = x;
+                        var localY = y;
+                        var pixel = snapshot.GetPixel(localX, localY);
 
-                        if (classIndex.HasValue)
+                        if (PixelsMatch(playerColor, pixel))
                         {
-                            var mario = objectClassifier.GetMario(classIndex.Value);
-                            var bounds = new Rectangle(x, y, mario.Bounds.Width, mario.Bounds.Height);
-
-                            return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds, MarkColor = mario.MarkColor };
+                            if (!candidatePixels.Any(p => localX - p.X < 16 || localY - p.Y < 16))
+                                candidatePixels.Add(new Point(localX, localY));
                         }
                     }
                 }
-            }
 
-            return null;
+                // Tente de détecter une frame de Mario autour des pixels candidats trouvés
+                foreach (Point point in candidatePixels)
+                {
+                    for (int x = (point.X - 8 >= 0 ? point.X - 8 : 0); x < (point.X + 24 < snapshot.Width ? point.X + 24 : snapshot.Width - 1); x++)
+                    {
+                        for (int y = (point.Y - 8 >= 0 ? point.Y - 8 : 0); y < (point.Y + 24 < snapshot.Height ? point.Y + 24 : snapshot.Height - 1); y++)
+                        {
+                            var classIndex = SearchAreaForMario(snapshot, x, y);
+
+                            if (classIndex.HasValue)
+                            {
+                                var mario = objectClassifier.GetMario(classIndex.Value);
+                                var bounds = new Rectangle(x, y, mario.Bounds.Width, mario.Bounds.Height);
+
+                                return new Mario() { MarioForm = mario.MarioForm, Bounds = bounds, MarkColor = mario.MarkColor };
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            });
         }
 
         public async Task<IEnumerable<Tile>> FindTiles(Bitmap snapshot, GameState gameState, int? playerDeltaX)
@@ -111,16 +116,11 @@ namespace Orthogiciel.Lobotomario.Core
                         var localX = x;
                         var localY = y;
 
-                        tasks.Add(new Task(() => SearchAreaForTiles(snapshot, tiles, localX, localY)));
+                        tasks.Add(Task.Run(() => SearchAreaForTiles(snapshot, tiles, localX, localY)));
                     }
                 }
 
-                foreach (Task t in tasks)
-                {
-                    t.Start();
-                }
-
-                await Task.WhenAll(tasks.ToArray());
+                await Task.WhenAll(tasks);
             }
 
             gameState.FirstTilePosition = firstTilePosition;
