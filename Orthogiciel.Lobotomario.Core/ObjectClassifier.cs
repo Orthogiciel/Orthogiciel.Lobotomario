@@ -98,7 +98,7 @@ namespace Orthogiciel.Lobotomario.Core
 
                     if (m.Bounds.Height == 32)
                     {
-                        ComputeHogDescriptorForMarioSpritesheetPosition(m, i, 32);
+                        ComputeHogDescriptorForMarioSpritesheetPosition(m, i, 16);
                     }
                 }
             };
@@ -108,7 +108,7 @@ namespace Orthogiciel.Lobotomario.Core
         {
             Console.WriteLine($"Computing Image HOG Descriptors - Mario {mario.MarioForm} - Position ({mario.SpritesheetPositions[i].X},{mario.SpritesheetPositions[i].Y + y_offset})");
 
-            var img = this.playerSet.GetSubRect(new Rectangle(mario.SpritesheetPositions[i], new Size(16, 16)));
+            var img = this.playerSet.GetSubRect(new Rectangle(new Point(mario.SpritesheetPositions[i].X, mario.SpritesheetPositions[i].Y + y_offset), new Size(16, 16)));
             var hog = hogDescriptor.Compute(img);
 
             for (var j = 0; j < hog.Length; j++)
