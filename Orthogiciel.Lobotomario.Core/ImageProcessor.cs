@@ -134,7 +134,7 @@ namespace Orthogiciel.Lobotomario.Core
 
             lock (snapshotLock)
             {
-                if (x + 16 >= snapshot.Width || y + 16 >= snapshot.Height)
+                if (x + 15 >= snapshot.Width || y + 15 >= snapshot.Height)
                     return;
 
                 imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
@@ -301,18 +301,15 @@ namespace Orthogiciel.Lobotomario.Core
 
         private Point? FindFirstTile(Bitmap snapshot)
         {
-            for (var y = snapshot.Height - 16 - 1; y > 0; y--)
+            for (var y = snapshot.Height - 17; y >= 0; y--)
             {
-                for (var x = 0; x < snapshot.Width - 16 - 1; x++)
+                for (var x = 0; x < snapshot.Width - 17; x++)
                 {
                     var imgSection = snapshot.Clone(new Rectangle(new Point(x, y), new Size(16, 16)), snapshot.PixelFormat);
                     var classIndex = (int)this.objectClassifier.ClassifyImage(imgSection);
 
                     if (classIndex == ObjectClasses.BreakableBlock || classIndex == ObjectClasses.UnbreakableBlock)
-                    {
-                        var tileType = (TileTypes)classIndex;
                         return new Point(x, y);
-                    }
                 }
             }
 

@@ -38,7 +38,7 @@ namespace Orthogiciel.Lobotomario.Core
         public float ClassifyImage(Bitmap snapshot)
         {
             var hogMatrix = new Matrix<float>(1, (int)this.hogDescriptor.DescriptorSize);
-            var img = new Image<Bgr, Byte>(snapshot).GetSubRect(new Rectangle(new Point(0,0), new Size(16, 16)));
+            var img = new Image<Bgr, Byte>(snapshot);
             var hog = hogDescriptor.Compute(img);
 
             for (var i = 0; i < hogMatrix.Cols; i++)
